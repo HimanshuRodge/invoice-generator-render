@@ -1,0 +1,632 @@
+{% extends "base.html" %} {% block content %}
+
+<div class="container-fluid py-4">
+
+    <!-- HEADER -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+            <h2 class="fw-bold mb-1">
+                <i class="bi bi-receipt-cutoff"></i> Invoice
+            </h2>
+
+            <div class="text-muted">
+                {{ invoice["invoice_number"] }}
+            </div>
+        </div>
+
+        <div class="d-flex gap-2 flex-wrap">
+
+            <a href="{{ url_for('edit_invoice', invoice_id=invoice['_id']) }}" class="btn btn-warning">
+                <i class="bi bi-pencil-square"></i> Edit Invoice
+            </a>
+
+            <a href="{{ url_for('invoice_pdf', invoice_id=invoice['_id']) }}" class="btn btn-primary">
+                <i class="bi bi-download"></i> Download Invoice
+            </a>
+
+            <a href="{{ url_for('invoices') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Back
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- INVOICE CARD -->
+    <div class="card border-0 shadow-lg">
+
+        <!-- BRAND HEADER -->
+        <div class="p-4 text-white" style="
+                background: linear-gradient(135deg, #172554, #2563eb);
+                border-radius: 12px 12px 0 0;
+             ">
+
+            <div class="row align-items-center">
+
+                <div class="col-md-7">
+
+                    <h1 class="fw-bold mb-0">
+                        LOGIXIUS
+                    </h1>
+
+                    <div class="fw-bold small mt-1">
+                        Transforming Ideas into Intelligent Solutions
+                    </div>
+
+                    <div class="mt-3">
+                        <span class="badge bg-light text-dark px-3 py-2">
+                            INVOICE
+                        </span>
+                    </div>
+
+                </div>
+
+                <div class="col-md-5 text-md-end mt-3 mt-md-0">
+
+                    <div class="small opacity-75">
+                        Invoice Number
+                    </div>
+
+                    <h4 class="fw-bold">
+                        {{ invoice["invoice_number"] }}
+                    </h4>
+
+                    <div class="small">
+                        Invoice Date: {{ invoice.get("date", "") }}
+                    </div>
+
+                    {% if invoice.get("due_date") %}
+                    <div class="small">
+                        Due Date: {{ invoice["due_date"] }}
+                    </div>
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="card-body p-4">
+
+
+            <!-- CUSTOMER -->
+            <div class="row mb-4">
+
+                <div class="col-md-6">
+
+                    <div class="text-primary fw-bold mb-2">
+                        BILL TO
+                    </div>
+
+                    <h5 class="fw-bold mb-1">
+                        {{ invoice["customer"].get("name", "") }}
+                    </h5>
+
+                    {% if invoice["customer"].get("address") %}
+                    <div>
+                        {{ invoice["customer"]["address"] }}
+                    </div>
+                    {% endif %} {% if invoice["customer"].get("phone") %}
+                    <div>
+                        <i class="bi bi-telephone"></i> {{ invoice["customer"]["phone"] }}
+                    </div>
+                    {% endif %} {% if invoice["customer"].get("email") %}
+                    <div>
+                        <i class="bi bi-envelope"></i> {{ invoice["customer"]["email"] }}
+                    </div>
+                    {% endif %} {% if invoice["customer"].get("gstin") %}
+                    <div>
+                        <strong>GSTIN:</strong> {{ invoice["customer"]["gstin"] }}
+                    </div>
+                    {% endif %}
+
+                </div>
+
+
+                <div class="col-md-6 text-md-end">
+
+                    <div class="text-primary fw-bold mb-2">
+                        PAYMENT STATUS
+                    </div>
+
+                    {% if invoice.get("payment_status") == "Paid" %}
+
+                    <span class="badge bg-success fs-6 px-3 py-2">
+                            <i class="bi bi-check-circle"></i>
+                            Paid
+                        </span> {% elif invoice.get("payment_status") == "Partially Paid" %}
+
+                    <span class="badge bg-warning text-dark fs-6 px-3 py-2">
+                            <i class="bi bi-hourglass-split"></i>
+                            Partially Paid
+                        </span> {% else %}
+
+                    <span class="badge bg-danger fs-6 px-3 py-2">
+                            <i class="bi bi-clock"></i>
+                            Pending
+                        </span> {% endif %}
+
+                </div>
+
+            </div>
+
+
+            <!-- ITEMS TABLE -->
+            <div class="table-responsive">
+
+                <table class="table table-bordered align-middle">
+
+                    <thead class="table-dark">
+
+                        <tr>
+
+                            <th>#</th>
+                            <th>Item</th>
+                            <th class="text-end">Qty</th>
+                            <th class="text-end">Price</th>
+                            <th class="text-end">Tax</th>
+                            <th class="text-end">Amount</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% for item in invoice["items"] %}
+
+                        <tr>
+
+                            <td>
+                                {{ loop.index }}
+                            </td>
+
+                            <td class="fw-semibold">
+                                {{ item.get("name", "") }}
+                            </td>
+
+                            <td class="text-end">
+                                {{ item.get("quantity", 0) }}
+                            </td>
+
+                            <td class="text-end">
+                                ₹{{ "%.2f"|format(item.get("price", 0)|float) }}
+                            </td>
+
+                            <td class="text-end">
+                                {{ item.get("tax", 0) }}%
+                            </td>
+
+                            <td class="text-end fw-semibold">
+                                ₹{{ "%.2f"|format(item.get("amount", 0)|float) }}
+                            </td>
+
+                        </tr>
+
+                        {% else %}
+
+                        <tr>
+
+                            <td colspan="6" class="text-center text-muted py-4">
+
+                                No invoice items found.
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+            <!-- TOTALS -->
+            <div class="row justify-content-end">
+
+                <div class="col-md-5">
+
+                    <div class="border rounded p-3 bg-light">
+
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Subtotal</span>
+                            <strong>
+                                ₹{{ "%.2f"|format(invoice.get("subtotal", 0)|float) }}
+                            </strong>
+                        </div>
+
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Discount</span>
+                            <strong>
+                                ₹{{ "%.2f"|format(invoice.get("discount", 0)|float) }}
+                            </strong>
+                        </div>
+
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Tax</span>
+                            <strong>
+                                ₹{{ "%.2f"|format(invoice.get("tax", 0)|float) }}
+                            </strong>
+                        </div>
+
+                        <hr>
+
+                        <div class="d-flex justify-content-between">
+
+                            <span class="fw-bold fs-5">
+                                Grand Total
+                            </span>
+
+                            <strong class="fs-5 text-primary">
+                                ₹{{ "%.2f"|format(invoice.get("grand_total", 0)|float) }}
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- PAYMENT SUMMARY -->
+            <div class="mt-4">
+
+                <h5 class="fw-bold mb-3">
+                    <i class="bi bi-wallet2"></i> Payment Summary
+                </h5>
+
+                <div class="row g-3">
+
+                    <div class="col-md-4">
+
+                        <div class="card border-0 shadow-sm h-100">
+
+                            <div class="card-body">
+
+                                <div class="text-muted">
+                                    Invoice Total
+                                </div>
+
+                                <h4 class="fw-bold">
+                                    ₹{{ "%.2f"|format(invoice.get("grand_total", 0)|float) }}
+                                </h4>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-md-4">
+
+                        <div class="card border-0 shadow-sm h-100">
+
+                            <div class="card-body">
+
+                                <div class="text-muted">
+                                    Paid Amount
+                                </div>
+
+                                <h4 class="fw-bold text-success">
+                                    ₹{{ "%.2f"|format(invoice.get("paid_amount", 0)|float) }}
+                                </h4>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="col-md-4">
+
+                        <div class="card border-0 shadow-sm h-100">
+
+                            <div class="card-body">
+
+                                <div class="text-muted">
+                                    Remaining Amount
+                                </div>
+
+                                <h4 class="fw-bold text-danger">
+                                    ₹{{ "%.2f"|format(invoice.get("remaining_amount", 0)|float) }}
+                                </h4>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ADD PAYMENT -->
+            {% if invoice.get("remaining_amount", 0)|float > 0 %}
+
+            <div class="card border-0 shadow-sm mt-4">
+
+                <div class="card-header text-white fw-bold" style="background: linear-gradient(135deg,#2563eb,#172554);">
+
+                    <i class="bi bi-credit-card"></i> Add Payment
+
+                </div>
+
+                <div class="card-body">
+
+                    <form method="POST" action="{{ url_for('add_payment', invoice_id=invoice['_id']) }}">
+
+                        <div class="row g-3">
+
+                            <div class="col-md-3">
+
+                                <label class="form-label fw-semibold">
+                                    Payment Amount
+                                </label>
+
+                                <input type="number" name="amount" class="form-control" step="0.01" min="0.01" max="{{ invoice.get('remaining_amount', 0) }}" placeholder="Enter amount" required>
+
+                                <small class="text-muted">
+                                    Maximum:
+                                    ₹{{ "%.2f"|format(invoice.get("remaining_amount", 0)|float) }}
+                                </small>
+
+                            </div>
+
+
+                            <div class="col-md-3">
+
+                                <label class="form-label fw-semibold">
+                                    Payment Type
+                                </label>
+
+                                <select name="payment_type" class="form-select">
+
+                                    <option value="Advance">
+                                        Advance Payment
+                                    </option>
+
+                                    <option value="Partial Payment">
+                                        Partial Payment
+                                    </option>
+
+                                    <option value="Final Payment">
+                                        Final Payment
+                                    </option>
+
+                                </select>
+
+                            </div>
+
+
+                            <div class="col-md-3">
+
+                                <label class="form-label fw-semibold">
+                                    Payment Date
+                                </label>
+
+                                <input type="date" name="payment_date" class="form-control" value="{{ now_date }}" required>
+
+                            </div>
+
+
+                            <div class="col-md-3">
+
+                                <label class="form-label fw-semibold">
+                                    Note
+                                </label>
+
+                                <input type="text" name="payment_note" class="form-control" placeholder="Optional note">
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="mt-3">
+
+                            <button type="submit" class="btn btn-success">
+
+                                <i class="bi bi-plus-circle"></i>
+                                Add Payment
+
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+            {% else %}
+
+            <div class="alert alert-success mt-4">
+
+                <i class="bi bi-check-circle-fill"></i>
+
+                <strong>Invoice Fully Paid</strong>
+
+                <div>
+                    No further payment is required.
+                </div>
+
+            </div>
+
+            {% endif %}
+
+
+            <!-- PAYMENT HISTORY -->
+            {% if invoice.get("payments", []) %}
+
+            <div class="mt-4">
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+
+                    <h5 class="fw-bold mb-0">
+                        <i class="bi bi-clock-history"></i> Payment History
+                    </h5>
+
+                </div>
+
+
+                <div class="table-responsive">
+
+                    <table class="table table-hover table-bordered">
+
+                        <thead class="table-light">
+
+                            <tr>
+
+                                <th>#</th>
+                                <th>Date</th>
+                                <th>Type</th>
+                                <th>Amount</th>
+                                <th>Remaining</th>
+                                <th>Note</th>
+                                <th>Receipt</th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                            {% for payment in invoice.get("payments", []) %}
+
+                            <tr>
+
+                                <td>
+                                    {{ loop.index }}
+                                </td>
+
+                                <td>
+                                    {{ payment.get("date", "") }}
+                                </td>
+
+                                <td>
+
+                                    {% if payment.get("type") == "Final Payment" %}
+
+                                    <span class="badge bg-success">
+                                            Final Payment
+                                        </span> {% elif payment.get("type") == "Advance" %}
+
+                                    <span class="badge bg-primary">
+                                            Advance
+                                        </span> {% else %}
+
+                                    <span class="badge bg-warning text-dark">
+                                            {{ payment.get("type", "") }}
+                                        </span> {% endif %}
+
+                                </td>
+
+                                <td class="fw-bold text-success">
+
+                                    ₹{{ "%.2f"|format(payment.get("amount", 0)|float) }}
+
+                                </td>
+
+                                <td>
+
+                                    ₹{{ "%.2f"|format(payment.get("remaining", 0)|float) }}
+
+                                </td>
+
+                                <td>
+
+                                    {{ payment.get("note", "") or "-" }}
+
+                                </td>
+
+                                <td>
+
+                                    {% if payment.get("id") %}
+
+                                    <a href="{{ url_for(
+                                        'payment_pdf',
+                                        invoice_id=invoice['_id'],
+                                        payment_id=payment['id']
+                                    ) }}" class="btn btn-sm btn-outline-primary">
+
+                                        <i class="bi bi-download"></i> Receipt
+
+                                    </a>
+
+                                    {% endif %}
+
+                                </td>
+
+                            </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+            {% endif %}
+
+
+            <!-- NOTES -->
+            {% if invoice.get("notes") %}
+
+            <div class="mt-4">
+
+                <h6 class="fw-bold">
+                    Notes
+                </h6>
+
+                <div class="alert alert-light border">
+
+                    {{ invoice["notes"] }}
+
+                </div>
+
+            </div>
+
+            {% endif %}
+
+
+            <!-- FOOTER BRANDING -->
+            <div class="text-center mt-5 pt-4 border-top">
+
+                <div class="fw-bold fs-5">
+                    LOGIXIUS
+                </div>
+
+                <div class="fw-bold text-muted small">
+                    Transforming Ideas into Intelligent Solutions
+                </div>
+
+                <div class="text-muted small mt-2">
+                    Thank you for your business!
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

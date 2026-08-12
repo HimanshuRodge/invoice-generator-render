@@ -1,0 +1,425 @@
+{% extends "base.html" %} {% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold">Edit Invoice</h2>
+        <p class="text-muted mb-0">
+            {{ invoice.get("invoice_number", "") }}
+        </p>
+    </div>
+
+    <a href="{{ url_for('invoice_view', invoice_id=invoice['_id']) }}" class="btn btn-outline-secondary">
+        ← Back to Invoice
+    </a>
+</div>
+
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-4">
+
+        <form method="POST">
+
+            <!-- INVOICE INFORMATION -->
+            <h5 class="fw-bold mb-3">Invoice Information</h5>
+
+            <div class="row g-3 mb-4">
+
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">
+                        Invoice Number
+                    </label>
+
+                    <input type="text" name="invoice_number" class="form-control" value="{{ invoice.get('invoice_number', '') }}" required>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">
+                        Invoice Date
+                    </label>
+
+                    <input type="date" name="date" class="form-control" value="{{ invoice.get('date', '') }}" required>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label fw-semibold">
+                        Due Date
+                    </label>
+
+                    <input type="date" name="due_date" class="form-control" value="{{ invoice.get('due_date', '') }}">
+                </div>
+
+            </div>
+
+
+            <!-- CUSTOMER -->
+            <h5 class="fw-bold mb-3">Customer Information</h5>
+
+            {% set customer = invoice.get("customer", {}) %}
+
+            <div class="row g-3 mb-4">
+
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">
+                        Customer Name
+                    </label>
+
+                    <input type="text" name="customer_name" class="form-control" value="{{ customer.get('name', '') }}" required>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">
+                        Phone
+                    </label>
+
+                    <input type="text" name="customer_phone" class="form-control" value="{{ customer.get('phone', '') }}">
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">
+                        Email
+                    </label>
+
+                    <input type="email" name="customer_email" class="form-control" value="{{ customer.get('email', '') }}">
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">
+                        GSTIN
+                    </label>
+
+                    <input type="text" name="customer_gstin" class="form-control" value="{{ customer.get('gstin', '') }}">
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label fw-semibold">
+                        Address
+                    </label>
+
+                    <textarea name="customer_address" class="form-control" rows="2">{{ customer.get('address', '') }}</textarea>
+                </div>
+
+            </div>
+
+
+            <!-- ITEMS -->
+            <h5 class="fw-bold mb-3">Invoice Items</h5>
+
+            <div class="table-responsive">
+
+                <table class="table table-bordered align-middle">
+
+                    <thead class="table-light">
+
+                        <tr>
+                            <th>Item</th>
+                            <th style="width:120px;">Quantity</th>
+                            <th style="width:160px;">Price</th>
+                            <th style="width:120px;">Tax %</th>
+                            <th style="width:160px;">Amount</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody id="itemsTable">
+
+                        {% for item in invoice.get("items", []) %}
+
+                        <tr>
+
+                            <td>
+                                <input type="text" name="item_name[]" class="form-control" value="{{ item.get('name', '') }}" required>
+                            </td>
+
+                            <td>
+                                <input type="number" name="item_qty[]" class="form-control item-qty" value="{{ item.get('quantity', 1) }}" min="0" step="0.01" required>
+                            </td>
+
+                            <td>
+                                <input type="number" name="item_price[]" class="form-control item-price" value="{{ item.get('price', 0) }}" min="0" step="0.01" required>
+                            </td>
+
+                            <td>
+                                <input type="number" name="item_tax[]" class="form-control item-tax" value="{{ item.get('tax', 0) }}" min="0" step="0.01" required>
+                            </td>
+
+                            <td>
+                                <input type="text" class="form-control item-amount" value="{{ item.get('amount', 0) }}" readonly>
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+            <button type="button" class="btn btn-outline-primary mb-4" onclick="addItem()">
+                + Add Item
+            </button>
+
+
+            <!-- TOTALS -->
+            <h5 class="fw-bold mb-3">Invoice Total</h5>
+
+            <div class="row justify-content-end">
+
+                <div class="col-md-5">
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Subtotal</span>
+
+                        <strong id="subtotalDisplay">
+                            ₹{{ "%.2f"|format(invoice.get("subtotal", 0)|float) }}
+                        </strong>
+                    </div>
+
+
+                    <div class="mb-3">
+
+                        <label class="form-label fw-semibold">
+                            Discount
+                        </label>
+
+                        <input type="number" name="discount" id="discount" class="form-control" value="{{ invoice.get('discount', 0) }}" min="0" step="0.01">
+
+                    </div>
+
+
+                    <div class="d-flex justify-content-between mb-2">
+
+                        <span>Tax</span>
+
+                        <strong id="taxDisplay">
+                            ₹{{ "%.2f"|format(invoice.get("tax", 0)|float) }}
+                        </strong>
+
+                    </div>
+
+
+                    <hr>
+
+
+                    <div class="d-flex justify-content-between">
+
+                        <h5 class="fw-bold">
+                            Grand Total
+                        </h5>
+
+                        <h5 class="fw-bold text-primary" id="grandTotalDisplay">
+
+                            ₹{{ "%.2f"|format(invoice.get("grand_total", 0)|float) }}
+
+                        </h5>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- NOTES -->
+            <div class="mt-4">
+
+                <label class="form-label fw-semibold">
+                    Notes
+                </label>
+
+                <textarea name="notes" class="form-control" rows="3" placeholder="Additional notes...">{{ invoice.get('notes', '') }}</textarea>
+
+            </div>
+
+
+            <!-- BUTTONS -->
+            <div class="mt-4 d-flex gap-2">
+
+                <button type="submit" class="btn btn-success px-4">
+
+                    💾 Save Changes
+
+                </button>
+
+                <a href="{{ url_for('invoice_view', invoice_id=invoice['_id']) }}" class="btn btn-outline-secondary px-4">
+
+                    Cancel
+
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+
+<script>
+    function calculateTotals() {
+
+        let subtotal = 0;
+        let taxTotal = 0;
+
+        const rows = document.querySelectorAll("#itemsTable tr");
+
+        rows.forEach(row => {
+
+            const qtyInput = row.querySelector(".item-qty");
+            const priceInput = row.querySelector(".item-price");
+            const taxInput = row.querySelector(".item-tax");
+            const amountInput = row.querySelector(".item-amount");
+
+            if (!qtyInput || !priceInput || !taxInput) {
+                return;
+            }
+
+            const qty = parseFloat(qtyInput.value) || 0;
+            const price = parseFloat(priceInput.value) || 0;
+            const tax = parseFloat(taxInput.value) || 0;
+
+            const amount = qty * price;
+            const taxAmount = amount * tax / 100;
+
+            subtotal += amount;
+            taxTotal += taxAmount;
+
+            if (amountInput) {
+                amountInput.value = amount.toFixed(2);
+            }
+
+        });
+
+
+        const discount =
+            parseFloat(document.getElementById("discount").value) || 0;
+
+        const taxable =
+            Math.max(0, subtotal - discount);
+
+
+        let averageTaxRate = 0;
+
+        if (subtotal > 0) {
+            averageTaxRate =
+                taxTotal / subtotal;
+        }
+
+
+        const finalTax =
+            taxable * averageTaxRate;
+
+
+        const grandTotal =
+            taxable + finalTax;
+
+
+        document.getElementById("subtotalDisplay").innerText =
+            "₹" + subtotal.toFixed(2);
+
+        document.getElementById("taxDisplay").innerText =
+            "₹" + finalTax.toFixed(2);
+
+        document.getElementById("grandTotalDisplay").innerText =
+            "₹" + grandTotal.toFixed(2);
+
+    }
+
+
+    function addItem() {
+
+        const table =
+            document.getElementById("itemsTable");
+
+        const row =
+            document.createElement("tr");
+
+        row.innerHTML = `
+
+        <td>
+            <input type="text"
+                   name="item_name[]"
+                   class="form-control"
+                   required>
+        </td>
+
+        <td>
+            <input type="number"
+                   name="item_qty[]"
+                   class="form-control item-qty"
+                   value="1"
+                   min="0"
+                   step="0.01"
+                   required>
+        </td>
+
+        <td>
+            <input type="number"
+                   name="item_price[]"
+                   class="form-control item-price"
+                   value="0"
+                   min="0"
+                   step="0.01"
+                   required>
+        </td>
+
+        <td>
+            <input type="number"
+                   name="item_tax[]"
+                   class="form-control item-tax"
+                   value="18"
+                   min="0"
+                   step="0.01"
+                   required>
+        </td>
+
+        <td>
+            <input type="text"
+                   class="form-control item-amount"
+                   value="0.00"
+                   readonly>
+        </td>
+
+    `;
+
+        table.appendChild(row);
+
+        attachCalculationEvents();
+
+    }
+
+
+    function attachCalculationEvents() {
+
+        document
+            .querySelectorAll(
+                ".item-qty, .item-price, .item-tax"
+            )
+            .forEach(input => {
+
+                input.addEventListener(
+                    "input",
+                    calculateTotals
+                );
+
+            });
+
+    }
+
+
+    document
+        .getElementById("discount")
+        .addEventListener(
+            "input",
+            calculateTotals
+        );
+
+
+    attachCalculationEvents();
+
+    calculateTotals();
+</script>
+
+{% endblock %}

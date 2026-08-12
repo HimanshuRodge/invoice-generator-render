@@ -1,0 +1,1355 @@
+{% extends "base.html" %} {% block content %}
+
+<!-- =========================================================
+     LOGIXIOUS DASHBOARD
+     ========================================================= -->
+
+<div class="dashboard-page">
+
+    <!-- HERO SECTION -->
+    <div class="dashboard-hero mb-4">
+
+        <div class="hero-content">
+
+            <div>
+                <span class="hero-badge">
+                    ✨ LOGIXIOUS BUSINESS MANAGEMENT
+                </span>
+
+                <h1 class="hero-title">
+                    Good day 👋
+                </h1>
+
+                <p class="hero-subtitle">
+                    Transforming Ideas into Intelligent Solutions
+                </p>
+
+                <p class="hero-description">
+                    Manage your invoices, customers, products and payments from one intelligent dashboard.
+                </p>
+
+                <div class="hero-buttons">
+
+                    <a href="{{ url_for('create_invoice') }}" class="btn btn-light btn-lg px-4 shadow-sm">
+                        🧾 Create Invoice
+                    </a>
+
+                    <a href="{{ url_for('invoices') }}" class="btn btn-outline-light btn-lg px-4">
+                        View Invoices
+                    </a>
+
+                </div>
+            </div>
+
+            <div class="hero-visual">
+
+                <div class="floating-card card-one">
+                    <span>🧾</span>
+                    <div>
+                        <small>Invoices</small>
+                        <strong>{{ invoice_count }}</strong>
+                    </div>
+                </div>
+
+                <div class="floating-card card-two">
+                    <span>💰</span>
+                    <div>
+                        <small>Paid Revenue</small>
+                        <strong>₹{{ "%.2f"|format(revenue) }}</strong>
+                    </div>
+                </div>
+
+                <div class="hero-circle">
+                    <div class="hero-logo">
+                        L
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         STATISTICS
+         ===================================================== -->
+
+    <div class="row g-4 mb-4">
+
+        <!-- TOTAL INVOICES -->
+        <div class="col-xl-3 col-md-6">
+
+            <div class="stat-card stat-blue">
+
+                <div class="stat-top">
+
+                    <div class="stat-icon">
+                        🧾
+                    </div>
+
+                    <span class="stat-label">
+                        TOTAL INVOICES
+                    </span>
+
+                </div>
+
+                <h2>
+                    {{ invoice_count }}
+                </h2>
+
+                <p>
+                    All invoices created
+                </p>
+
+                <div class="stat-progress">
+                    <div style="width: 78%;"></div>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- CUSTOMERS -->
+        <div class="col-xl-3 col-md-6">
+
+            <div class="stat-card stat-purple">
+
+                <div class="stat-top">
+
+                    <div class="stat-icon">
+                        👥
+                    </div>
+
+                    <span class="stat-label">
+                        CUSTOMERS
+                    </span>
+
+                </div>
+
+                <h2>
+                    {{ customers }}
+                </h2>
+
+                <p>
+                    Registered customers
+                </p>
+
+                <div class="stat-progress">
+                    <div style="width: 65%;"></div>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- PRODUCTS -->
+        <div class="col-xl-3 col-md-6">
+
+            <div class="stat-card stat-orange">
+
+                <div class="stat-top">
+
+                    <div class="stat-icon">
+                        📦
+                    </div>
+
+                    <span class="stat-label">
+                        PRODUCTS
+                    </span>
+
+                </div>
+
+                <h2>
+                    {{ products }}
+                </h2>
+
+                <p>
+                    Products in catalogue
+                </p>
+
+                <div class="stat-progress">
+                    <div style="width: 55%;"></div>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- REVENUE -->
+        <div class="col-xl-3 col-md-6">
+
+            <div class="stat-card stat-green">
+
+                <div class="stat-top">
+
+                    <div class="stat-icon">
+                        ₹
+                    </div>
+
+                    <span class="stat-label">
+                        PAID REVENUE
+                    </span>
+
+                </div>
+
+                <h2>
+                    ₹{{ "%.2f"|format(revenue) }}
+                </h2>
+
+                <p>
+                    Total payments received
+                </p>
+
+                <div class="stat-progress">
+                    <div style="width: 85%;"></div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         FINANCIAL OVERVIEW
+         ===================================================== -->
+
+    <div class="row g-4 mb-4">
+
+        <div class="col-lg-8">
+
+            <div class="overview-card">
+
+                <div class="overview-header">
+
+                    <div>
+
+                        <span class="section-label">
+                            FINANCIAL OVERVIEW
+                        </span>
+
+                        <h4>
+                            Business Performance
+                        </h4>
+
+                    </div>
+
+                    <div class="overview-icon">
+                        📊
+                    </div>
+
+                </div>
+
+
+                <div class="financial-grid">
+
+                    <!-- BILLING -->
+                    <div class="financial-item">
+
+                        <div class="financial-icon billing">
+                            💼
+                        </div>
+
+                        <div>
+
+                            <small>
+                                Total Billing
+                            </small>
+
+                            <h3>
+                                ₹{{ "%.2f"|format(total_billing|default(0)) }}
+                            </h3>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- PAID -->
+                    <div class="financial-item">
+
+                        <div class="financial-icon paid">
+                            ✅
+                        </div>
+
+                        <div>
+
+                            <small>
+                                Total Paid
+                            </small>
+
+                            <h3>
+                                ₹{{ "%.2f"|format(total_paid|default(revenue)|float) }}
+                            </h3>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- REMAINING -->
+                    <div class="financial-item">
+
+                        <div class="financial-icon remaining">
+                            ⏳
+                        </div>
+
+                        <div>
+
+                            <small>
+                                Remaining
+                            </small>
+
+                            <h3>
+                                ₹{{ "%.2f"|format(total_remaining|default(0)) }}
+                            </h3>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- VISUAL BAR -->
+
+                {% set billing = total_billing|default(0)|float %} {% set paid = total_paid|default(revenue)|float %} {% if billing > 0 %} {% set paid_percentage = (paid / billing * 100) %} {% else %} {% set paid_percentage = 0 %} {% endif %}
+
+                <div class="payment-progress-wrapper">
+
+                    <div class="d-flex justify-content-between mb-2">
+
+                        <span>
+                            Payment Collection
+                        </span>
+
+                        <strong>
+                            {{ "%.1f"|format(paid_percentage) }}%
+                        </strong>
+
+                    </div>
+
+                    <div class="payment-progress">
+
+                        <div class="payment-progress-bar" style="width: {{ paid_percentage }}%;">
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- QUICK ACTIONS -->
+
+        <div class="col-lg-4">
+
+            <div class="quick-card">
+
+                <div class="quick-header">
+
+                    <div>
+
+                        <span class="section-label">
+                            QUICK ACTIONS
+                        </span>
+
+                        <h4>
+                            Manage Business
+                        </h4>
+
+                    </div>
+
+                    <span class="quick-menu">
+                        ⋮
+                    </span>
+
+                </div>
+
+
+                <div class="quick-actions">
+
+                    <a href="{{ url_for('create_invoice') }}" class="quick-action">
+
+                        <span class="quick-action-icon blue">
+                            🧾
+                        </span>
+
+                        <div>
+                            <strong>Create Invoice</strong>
+                            <small>Generate a new invoice</small>
+                        </div>
+
+                        <span class="arrow">
+                            →
+                        </span>
+
+                    </a>
+
+
+                    <a href="{{ url_for('customers') }}" class="quick-action">
+
+                        <span class="quick-action-icon purple">
+                            👥
+                        </span>
+
+                        <div>
+                            <strong>Customers</strong>
+                            <small>Manage customer records</small>
+                        </div>
+
+                        <span class="arrow">
+                            →
+                        </span>
+
+                    </a>
+
+
+                    <a href="{{ url_for('products') }}" class="quick-action">
+
+                        <span class="quick-action-icon orange">
+                            📦
+                        </span>
+
+                        <div>
+                            <strong>Products</strong>
+                            <small>Manage product catalogue</small>
+                        </div>
+
+                        <span class="arrow">
+                            →
+                        </span>
+
+                    </a>
+
+
+                    <a href="{{ url_for('invoices') }}" class="quick-action">
+
+                        <span class="quick-action-icon green">
+                            📋
+                        </span>
+
+                        <div>
+                            <strong>Invoice History</strong>
+                            <small>View all invoices</small>
+                        </div>
+
+                        <span class="arrow">
+                            →
+                        </span>
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         RECENT INVOICES
+         ===================================================== -->
+
+    <div class="recent-card">
+
+        <div class="recent-header">
+
+            <div>
+
+                <span class="section-label">
+                    TRANSACTIONS
+                </span>
+
+                <h4>
+                    Recent Invoices
+                </h4>
+
+            </div>
+
+            <a href="{{ url_for('invoices') }}" class="view-all-btn">
+
+                View All
+                →
+
+            </a>
+
+        </div>
+
+
+        <div class="table-responsive">
+
+            <table class="table recent-table align-middle">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            INVOICE
+                        </th>
+
+                        <th>
+                            CUSTOMER
+                        </th>
+
+                        <th>
+                            DATE
+                        </th>
+
+                        <th>
+                            STATUS
+                        </th>
+
+                        <th class="text-end">
+                            TOTAL
+                        </th>
+
+                        <th class="text-end">
+                            ACTION
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for i in invoices %}
+
+                    <tr>
+
+                        <td>
+
+                            <div class="invoice-number">
+
+                                <span class="invoice-icon">
+                                    🧾
+                                </span>
+
+                                <strong>
+                                    {{ i.invoice_number }}
+                                </strong>
+
+                            </div>
+
+                        </td>
+
+
+                        <td>
+
+                            <div class="customer-info">
+
+                                <div class="customer-avatar">
+                                    {{ i.customer.name[:1]|upper }}
+                                </div>
+
+                                <span>
+                                    {{ i.customer.name }}
+                                </span>
+
+                            </div>
+
+                        </td>
+
+
+                        <td>
+
+                            <span class="date-text">
+                                {{ i.date }}
+                            </span>
+
+                        </td>
+
+
+                        <td>
+
+                            {% if i.payment_status == "Paid" %}
+
+                            <span class="status-badge status-paid">
+                                <span>●</span> Paid
+                            </span>
+
+                            {% elif i.payment_status == "Partially Paid" %}
+
+                            <span class="status-badge status-partial">
+                                <span>●</span> Partially Paid
+                            </span>
+
+                            {% else %}
+
+                            <span class="status-badge status-pending">
+                                <span>●</span> Pending
+                            </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td class="text-end">
+
+                            <strong class="invoice-total">
+                                ₹{{ "%.2f"|format(i.grand_total) }}
+                            </strong>
+
+                        </td>
+
+
+                        <td class="text-end">
+
+                            <a href="{{ url_for('invoice_view', invoice_id=i._id) }}" class="view-btn">
+
+                                View
+
+                            </a>
+
+                        </td>
+
+                    </tr>
+
+
+                    {% else %}
+
+                    <tr>
+
+                        <td colspan="6">
+
+                            <div class="empty-state">
+
+                                <div class="empty-icon">
+                                    🧾
+                                </div>
+
+                                <h5>
+                                    No invoices yet
+                                </h5>
+
+                                <p>
+                                    Create your first invoice to get started.
+                                </p>
+
+                                <a href="{{ url_for('create_invoice') }}" class="btn btn-primary px-4">
+
+                                    Create Invoice
+
+                                </a>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         BRAND FOOTER
+         ===================================================== -->
+
+    <div class="dashboard-footer">
+
+        <strong>
+            LOGIXIOUS
+        </strong>
+
+        <span>
+            Transforming Ideas into Intelligent Solutions
+        </span>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     DASHBOARD CSS
+     ========================================================= -->
+
+<style>
+    .dashboard-page {
+        min-height: 100vh;
+    }
+    /* HERO */
+    
+    .dashboard-hero {
+        position: relative;
+        overflow: hidden;
+        border-radius: 24px;
+        padding: 38px 45px;
+        background: radial-gradient(circle at 85% 20%, rgba(96, 165, 250, .45), transparent 30%), radial-gradient(circle at 70% 90%, rgba(168, 85, 247, .35), transparent 35%), linear-gradient(135deg, #172554 0%, #1e3a8a 45%, #2563eb 100%);
+        color: white;
+        box-shadow: 0 18px 45px rgba(30, 64, 175, .25);
+    }
+    
+    .hero-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: relative;
+        z-index: 2;
+    }
+    
+    .hero-badge {
+        display: inline-block;
+        padding: 7px 14px;
+        border-radius: 50px;
+        background: rgba(255, 255, 255, .14);
+        border: 1px solid rgba(255, 255, 255, .2);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        margin-bottom: 15px;
+    }
+    
+    .hero-title {
+        font-size: 38px;
+        font-weight: 800;
+        margin-bottom: 4px;
+    }
+    
+    .hero-subtitle {
+        font-size: 17px;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+    
+    .hero-description {
+        max-width: 600px;
+        opacity: .82;
+        margin-bottom: 22px;
+    }
+    
+    .hero-buttons {
+        display: flex;
+        gap: 12px;
+    }
+    /* HERO VISUAL */
+    
+    .hero-visual {
+        position: relative;
+        width: 310px;
+        height: 200px;
+    }
+    
+    .hero-circle {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        position: absolute;
+        right: 60px;
+        top: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(255, 255, 255, .08);
+        border: 1px solid rgba(255, 255, 255, .2);
+        box-shadow: 0 0 70px rgba(255, 255, 255, .15);
+    }
+    
+    .hero-logo {
+        width: 90px;
+        height: 90px;
+        border-radius: 25px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, .95);
+        color: #1e3a8a;
+        font-size: 48px;
+        font-weight: 900;
+    }
+    
+    .floating-card {
+        position: absolute;
+        z-index: 3;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 15px;
+        background: rgba(255, 255, 255, .96);
+        color: #172554;
+        border-radius: 14px;
+        box-shadow: 0 12px 30px rgba(0, 0, 0, .18);
+    }
+    
+    .floating-card span {
+        font-size: 24px;
+    }
+    
+    .floating-card small {
+        display: block;
+        color: #64748b;
+    }
+    
+    .floating-card strong {
+        display: block;
+    }
+    
+    .card-one {
+        left: 0;
+        top: 10px;
+    }
+    
+    .card-two {
+        right: 0;
+        bottom: 5px;
+    }
+    /* STAT CARDS */
+    
+    .stat-card {
+        border-radius: 20px;
+        padding: 22px;
+        background: white;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 8px 25px rgba(15, 23, 42, .06);
+        transition: .3s ease;
+        overflow: hidden;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(15, 23, 42, .12);
+    }
+    
+    .stat-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 14px;
+        font-size: 22px;
+    }
+    
+    .stat-label {
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: .8px;
+        color: #64748b;
+    }
+    
+    .stat-card h2 {
+        margin-top: 18px;
+        margin-bottom: 4px;
+        font-weight: 800;
+        color: #172554;
+    }
+    
+    .stat-card p {
+        color: #64748b;
+        margin-bottom: 14px;
+        font-size: 13px;
+    }
+    
+    .stat-progress {
+        height: 5px;
+        background: #f1f5f9;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    
+    .stat-progress div {
+        height: 100%;
+        border-radius: 10px;
+    }
+    
+    .stat-blue .stat-icon {
+        background: #dbeafe;
+    }
+    
+    .stat-blue .stat-progress div {
+        background: #2563eb;
+    }
+    
+    .stat-purple .stat-icon {
+        background: #f3e8ff;
+    }
+    
+    .stat-purple .stat-progress div {
+        background: #9333ea;
+    }
+    
+    .stat-orange .stat-icon {
+        background: #ffedd5;
+    }
+    
+    .stat-orange .stat-progress div {
+        background: #f97316;
+    }
+    
+    .stat-green .stat-icon {
+        background: #dcfce7;
+    }
+    
+    .stat-green .stat-progress div {
+        background: #16a34a;
+    }
+    /* COMMON CARD */
+    
+    .overview-card,
+    .quick-card,
+    .recent-card {
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        box-shadow: 0 8px 25px rgba(15, 23, 42, .06);
+    }
+    
+    .overview-card {
+        padding: 25px;
+    }
+    
+    .overview-header,
+    .quick-header,
+    .recent-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .section-label {
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 1px;
+        color: #64748b;
+    }
+    
+    .overview-header h4,
+    .quick-header h4,
+    .recent-header h4 {
+        margin-top: 5px;
+        margin-bottom: 0;
+        font-weight: 800;
+        color: #172554;
+    }
+    
+    .overview-icon {
+        width: 45px;
+        height: 45px;
+        border-radius: 14px;
+        background: #dbeafe;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 21px;
+    }
+    /* FINANCIAL GRID */
+    
+    .financial-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+        margin-top: 25px;
+    }
+    
+    .financial-item {
+        padding: 18px;
+        border-radius: 15px;
+        background: #f8fafc;
+        display: flex;
+        align-items: center;
+        gap: 13px;
+    }
+    
+    .financial-icon {
+        width: 42px;
+        height: 42px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+    }
+    
+    .financial-icon.billing {
+        background: #dbeafe;
+    }
+    
+    .financial-icon.paid {
+        background: #dcfce7;
+    }
+    
+    .financial-icon.remaining {
+        background: #fee2e2;
+    }
+    
+    .financial-item small {
+        color: #64748b;
+    }
+    
+    .financial-item h3 {
+        font-size: 18px;
+        margin: 4px 0 0;
+        font-weight: 800;
+    }
+    /* PAYMENT PROGRESS */
+    
+    .payment-progress-wrapper {
+        margin-top: 25px;
+    }
+    
+    .payment-progress-wrapper span {
+        font-size: 13px;
+        color: #64748b;
+    }
+    
+    .payment-progress {
+        height: 10px;
+        background: #e2e8f0;
+        border-radius: 20px;
+        overflow: hidden;
+    }
+    
+    .payment-progress-bar {
+        height: 100%;
+        border-radius: 20px;
+        background: linear-gradient(90deg, #2563eb, #06b6d4);
+        transition: width .8s ease;
+    }
+    /* QUICK ACTIONS */
+    
+    .quick-card {
+        padding: 25px;
+        height: 100%;
+    }
+    
+    .quick-menu {
+        font-size: 22px;
+        color: #64748b;
+    }
+    
+    .quick-actions {
+        margin-top: 18px;
+    }
+    
+    .quick-action {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 8px;
+        text-decoration: none;
+        color: #172554;
+        border-bottom: 1px solid #f1f5f9;
+        transition: .2s ease;
+    }
+    
+    .quick-action:last-child {
+        border-bottom: none;
+    }
+    
+    .quick-action:hover {
+        padding-left: 14px;
+        background: #f8fafc;
+        border-radius: 12px;
+    }
+    
+    .quick-action-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .quick-action-icon.blue {
+        background: #dbeafe;
+    }
+    
+    .quick-action-icon.purple {
+        background: #f3e8ff;
+    }
+    
+    .quick-action-icon.orange {
+        background: #ffedd5;
+    }
+    
+    .quick-action-icon.green {
+        background: #dcfce7;
+    }
+    
+    .quick-action div {
+        flex: 1;
+    }
+    
+    .quick-action strong {
+        display: block;
+        font-size: 13px;
+    }
+    
+    .quick-action small {
+        color: #94a3b8;
+        font-size: 11px;
+    }
+    
+    .arrow {
+        color: #94a3b8;
+        font-size: 18px;
+    }
+    /* RECENT INVOICES */
+    
+    .recent-card {
+        overflow: hidden;
+    }
+    
+    .recent-header {
+        padding: 25px;
+    }
+    
+    .view-all-btn {
+        text-decoration: none;
+        font-weight: 700;
+        color: #2563eb;
+        font-size: 13px;
+    }
+    
+    .recent-table {
+        margin-bottom: 0;
+    }
+    
+    .recent-table thead {
+        background: #f8fafc;
+    }
+    
+    .recent-table th {
+        padding: 14px 25px;
+        font-size: 10px;
+        color: #64748b;
+        letter-spacing: .7px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .recent-table td {
+        padding: 16px 25px;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    
+    .invoice-number {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .invoice-icon {
+        width: 35px;
+        height: 35px;
+        border-radius: 10px;
+        background: #eff6ff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .customer-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .customer-avatar {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: #dbeafe;
+        color: #1d4ed8;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+    }
+    
+    .date-text {
+        color: #64748b;
+        font-size: 13px;
+    }
+    
+    .invoice-total {
+        color: #172554;
+    }
+    /* STATUS */
+    
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 10px;
+        border-radius: 50px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+    
+    .status-paid {
+        background: #dcfce7;
+        color: #15803d;
+    }
+    
+    .status-partial {
+        background: #fef3c7;
+        color: #b45309;
+    }
+    
+    .status-pending {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+    /* VIEW BUTTON */
+    
+    .view-btn {
+        display: inline-block;
+        padding: 6px 13px;
+        border-radius: 8px;
+        border: 1px solid #bfdbfe;
+        color: #2563eb;
+        text-decoration: none;
+        font-size: 12px;
+        font-weight: 700;
+        transition: .2s ease;
+    }
+    
+    .view-btn:hover {
+        background: #2563eb;
+        color: white;
+    }
+    /* EMPTY */
+    
+    .empty-state {
+        text-align: center;
+        padding: 55px 20px;
+    }
+    
+    .empty-icon {
+        font-size: 45px;
+        margin-bottom: 12px;
+    }
+    
+    .empty-state h5 {
+        font-weight: 800;
+    }
+    
+    .empty-state p {
+        color: #64748b;
+    }
+    /* FOOTER */
+    
+    .dashboard-footer {
+        text-align: center;
+        padding: 30px 10px 10px;
+        color: #64748b;
+    }
+    
+    .dashboard-footer strong {
+        color: #172554;
+        font-size: 15px;
+    }
+    
+    .dashboard-footer span {
+        display: block;
+        margin-top: 4px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+    /* RESPONSIVE */
+    
+    @media (max-width: 992px) {
+        .hero-content {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .hero-visual {
+            display: none;
+        }
+        .financial-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .dashboard-hero {
+            padding: 28px 22px;
+        }
+        .hero-title {
+            font-size: 30px;
+        }
+        .hero-buttons {
+            flex-direction: column;
+        }
+        .hero-buttons .btn {
+            width: 100%;
+        }
+        .recent-table th,
+        .recent-table td {
+            padding: 12px;
+        }
+    }
+</style>
+
+
+<!-- =========================================================
+     SMALL INTERACTION SCRIPT
+     ========================================================= -->
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+
+        // Animate progress bars
+        const bars = document.querySelectorAll(
+            ".stat-progress div, .payment-progress-bar"
+        );
+
+        bars.forEach(function(bar) {
+
+            const targetWidth = bar.style.width;
+
+            bar.style.width = "0%";
+
+            setTimeout(function() {
+                bar.style.width = targetWidth;
+            }, 300);
+
+        });
+
+
+        // Add subtle hover effect to cards
+        const cards = document.querySelectorAll(
+            ".stat-card, .quick-action, .financial-item"
+        );
+
+        cards.forEach(function(card) {
+
+            card.addEventListener("mouseenter", function() {
+                this.style.transition = "all .25s ease";
+            });
+
+        });
+
+    });
+</script>
+
+{% endblock %}

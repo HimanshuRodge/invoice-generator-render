@@ -1,0 +1,583 @@
+/* =====================================================
+   GLOBAL
+===================================================== */
+
+body {
+    background: #f5f7fb;
+    color: #172033;
+    font-family: "Inter", "Segoe UI", Arial, sans-serif;
+}
+
+
+/* =====================================================
+   NAVBAR
+===================================================== */
+
+.app-nav {
+    background: linear-gradient( 135deg, #172554, #1e3a8a, #312e81);
+    box-shadow: 0 4px 20px rgba(15, 23, 42, 0.15);
+}
+
+.app-nav .navbar-brand {
+    font-size: 24px;
+    letter-spacing: -0.5px;
+}
+
+.app-nav .navbar-brand span {
+    color: #60a5fa;
+}
+
+.app-nav .nav-link {
+    font-weight: 500;
+    margin-left: 8px;
+    transition: 0.2s ease;
+}
+
+.app-nav .nav-link:hover {
+    color: #93c5fd !important;
+}
+
+
+/* =====================================================
+   DASHBOARD HEADER
+===================================================== */
+
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 30px;
+    border-radius: 24px;
+    background: radial-gradient( circle at top right, rgba(99, 102, 241, 0.18), transparent 35%), linear-gradient( 135deg, #ffffff, #f8faff);
+    border: 1px solid #e7ebf3;
+    box-shadow: 0 10px 35px rgba(15, 23, 42, 0.06);
+}
+
+.welcome-badge {
+    display: inline-block;
+    padding: 7px 13px;
+    border-radius: 50px;
+    background: #eef2ff;
+    color: #4f46e5;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.dashboard-title {
+    font-size: 34px;
+    font-weight: 800;
+    margin-bottom: 6px;
+    letter-spacing: -1px;
+}
+
+.dashboard-subtitle {
+    color: #64748b;
+    margin-bottom: 0;
+    font-size: 15px;
+}
+
+.create-invoice-btn {
+    border: none;
+    padding: 13px 22px;
+    border-radius: 12px;
+    background: linear-gradient( 135deg, #4f46e5, #2563eb);
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25);
+    transition: all 0.25s ease;
+}
+
+.create-invoice-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 28px rgba(37, 99, 235, 0.3);
+}
+
+
+/* =====================================================
+   STAT CARDS
+===================================================== */
+
+.dashboard-stat-card {
+    position: relative;
+    padding: 24px;
+    min-height: 175px;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.07);
+}
+
+.dashboard-stat-card:hover {
+    transform: translateY(-7px);
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.13);
+}
+
+
+/* decorative circle */
+
+.dashboard-stat-card::after {
+    content: "";
+    position: absolute;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    right: -40px;
+    bottom: -45px;
+    background: rgba(255, 255, 255, 0.18);
+}
+
+
+/* CARD COLORS */
+
+.invoice-card {
+    background: linear-gradient( 135deg, #4f46e5, #6366f1);
+    color: white;
+}
+
+.customer-card {
+    background: linear-gradient( 135deg, #0284c7, #06b6d4);
+    color: white;
+}
+
+.product-card {
+    background: linear-gradient( 135deg, #ea580c, #f97316);
+    color: white;
+}
+
+.revenue-card {
+    background: linear-gradient( 135deg, #059669, #10b981);
+    color: white;
+}
+
+.stat-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    z-index: 2;
+}
+
+.stat-icon-wrapper {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(8px);
+    font-size: 23px;
+}
+
+.stat-label {
+    font-size: 13px;
+    font-weight: 600;
+    opacity: 0.9;
+}
+
+.stat-number {
+    position: relative;
+    z-index: 2;
+    margin-top: 24px;
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -1px;
+}
+
+.revenue-number {
+    font-size: 27px;
+}
+
+.stat-footer {
+    position: relative;
+    z-index: 2;
+    margin-top: 8px;
+    font-size: 12px;
+    opacity: 0.85;
+}
+
+
+/* =====================================================
+   FINANCIAL CARDS
+===================================================== */
+
+.finance-card {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 22px;
+    border-radius: 18px;
+    background: white;
+    border: 1px solid #e7ebf3;
+    box-shadow: 0 8px 25px rgba(15, 23, 42, 0.05);
+    transition: 0.25s ease;
+}
+
+.finance-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 14px 30px rgba(15, 23, 42, 0.09);
+}
+
+.finance-icon {
+    width: 58px;
+    height: 58px;
+    border-radius: 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 26px;
+}
+
+.finance-blue .finance-icon {
+    background: #dbeafe;
+}
+
+.finance-green .finance-icon {
+    background: #d1fae5;
+}
+
+.finance-orange .finance-icon {
+    background: #ffedd5;
+}
+
+.finance-label {
+    margin: 0 0 3px;
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.finance-card h3 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 800;
+}
+
+.finance-card small {
+    color: #94a3b8;
+}
+
+
+/* =====================================================
+   SECTION HEADING
+===================================================== */
+
+.section-heading {
+    margin-top: 10px;
+    margin-bottom: 18px;
+}
+
+.section-heading h4 {
+    margin: 0;
+    font-weight: 800;
+}
+
+.section-heading p {
+    margin: 4px 0 0;
+    color: #94a3b8;
+    font-size: 14px;
+}
+
+
+/* =====================================================
+   QUICK ACTIONS
+===================================================== */
+
+.quick-action {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    position: relative;
+    text-decoration: none;
+    background: white;
+    border: 1px solid #e7ebf3;
+    border-radius: 17px;
+    padding: 18px;
+    color: #172033;
+    box-shadow: 0 7px 20px rgba(15, 23, 42, 0.04);
+    transition: all 0.25s ease;
+}
+
+.quick-action:hover {
+    color: #172033;
+    transform: translateY(-5px);
+    box-shadow: 0 14px 30px rgba(15, 23, 42, 0.09);
+}
+
+.quick-action h6 {
+    margin: 0 0 3px;
+    font-weight: 750;
+}
+
+.quick-action small {
+    color: #94a3b8;
+    font-size: 11px;
+}
+
+.quick-icon {
+    min-width: 48px;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 14px;
+    font-size: 21px;
+}
+
+.quick-icon.purple {
+    background: #ede9fe;
+}
+
+.quick-icon.blue {
+    background: #dbeafe;
+}
+
+.quick-icon.orange {
+    background: #ffedd5;
+}
+
+.quick-icon.green {
+    background: #d1fae5;
+}
+
+.arrow {
+    margin-left: auto;
+    color: #94a3b8;
+    font-size: 20px;
+    transition: 0.2s ease;
+}
+
+.quick-action:hover .arrow {
+    transform: translateX(4px);
+    color: #4f46e5;
+}
+
+
+/* =====================================================
+   RECENT INVOICE CARD
+===================================================== */
+
+.dashboard-table-card {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+}
+
+.recent-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px;
+    border-bottom: 1px solid #eef1f6;
+}
+
+.recent-header h4 {
+    margin: 0;
+    font-weight: 800;
+}
+
+.recent-header p {
+    margin: 4px 0 0;
+    color: #94a3b8;
+    font-size: 13px;
+}
+
+.view-all-btn {
+    text-decoration: none;
+    color: #4f46e5;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 9px 14px;
+    border-radius: 10px;
+    background: #eef2ff;
+    transition: 0.2s ease;
+}
+
+.view-all-btn:hover {
+    background: #e0e7ff;
+    color: #3730a3;
+}
+
+
+/* =====================================================
+   TABLE
+===================================================== */
+
+.dashboard-table thead {
+    background: #f8fafc;
+}
+
+.dashboard-table thead th {
+    color: #64748b;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 700;
+    padding: 15px 20px;
+    border: none;
+}
+
+.dashboard-table tbody td {
+    padding: 17px 20px;
+    border-color: #f1f5f9;
+}
+
+.dashboard-table tbody tr {
+    transition: 0.2s ease;
+}
+
+.dashboard-table tbody tr:hover {
+    background: #f8faff;
+}
+
+.invoice-number {
+    color: #4f46e5;
+    font-weight: 800;
+    font-size: 14px;
+}
+
+.customer-name {
+    font-weight: 600;
+    color: #334155;
+}
+
+.date-text {
+    color: #64748b;
+    font-size: 13px;
+}
+
+.invoice-total {
+    font-size: 14px;
+    color: #172033;
+}
+
+
+/* =====================================================
+   STATUS BADGES
+===================================================== */
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 10px;
+    border-radius: 50px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.status-paid {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.status-partial {
+    background: #fef3c7;
+    color: #b45309;
+}
+
+.status-pending {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+
+/* =====================================================
+   VIEW BUTTON
+===================================================== */
+
+.view-invoice-btn {
+    display: inline-block;
+    text-decoration: none;
+    color: #4f46e5;
+    background: #eef2ff;
+    padding: 7px 13px;
+    border-radius: 9px;
+    font-size: 12px;
+    font-weight: 700;
+    transition: 0.2s ease;
+}
+
+.view-invoice-btn:hover {
+    color: white;
+    background: #4f46e5;
+    transform: translateY(-1px);
+}
+
+
+/* =====================================================
+   EMPTY STATE
+===================================================== */
+
+.empty-state {
+    padding: 60px !important;
+}
+
+.empty-icon {
+    font-size: 42px;
+    margin-bottom: 10px;
+}
+
+.empty-state h5 {
+    font-weight: 800;
+}
+
+.empty-state p {
+    color: #94a3b8;
+    margin-bottom: 20px;
+}
+
+
+/* =====================================================
+   DASHBOARD FOOTER
+===================================================== */
+
+.dashboard-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 30px;
+    padding: 18px 4px;
+    color: #94a3b8;
+    font-size: 12px;
+}
+
+.dashboard-footer strong {
+    color: #4f46e5;
+    margin-right: 8px;
+}
+
+
+/* =====================================================
+   RESPONSIVE
+===================================================== */
+
+@media (max-width: 768px) {
+    .dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 20px;
+        padding: 22px;
+    }
+    .dashboard-title {
+        font-size: 28px;
+    }
+    .dashboard-actions {
+        width: 100%;
+    }
+    .create-invoice-btn {
+        width: 100%;
+    }
+    .recent-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    .dashboard-footer {
+        flex-direction: column;
+        gap: 8px;
+        text-align: center;
+    }
+}

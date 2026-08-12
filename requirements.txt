@@ -1,0 +1,5 @@
+Flask==3.1.1
+Flask-PyMongo==3.0.1
+pymongo==4.13.2
+python-dotenv==1.1.1
+reportlab==4.4.2

@@ -1,0 +1,512 @@
+{% extends "base.html" %} {% block content %}
+
+<form method="post" id="invoiceForm">
+
+    ```
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold">Create Invoice</h2>
+            <p class="text-muted mb-0">Generate a professional invoice.</p>
+        </div>
+
+        <button type="submit" class="btn btn-primary px-4">
+        Save Invoice
+    </button>
+    </div>
+
+    <div class="row g-4">
+
+        <!-- LEFT SIDE -->
+        <div class="col-lg-8">
+
+            <!-- Customer Details -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body">
+
+                    <h5 class="fw-bold mb-3">Customer Details</h5>
+
+                    <select id="customerSelect" class="form-select mb-3">
+                    <option value="">
+                        Select existing customer or enter below
+                    </option>
+
+                    {% for c in customers %}
+                    <option
+                        data-name="{{ c.name }}"
+                        data-phone="{{ c.phone }}"
+                        data-email="{{ c.email }}"
+                        data-address="{{ c.address }}"
+                        data-gstin="{{ c.gstin }}"
+                    >
+                        {{ c.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+
+                    <div class="row g-3">
+
+                        <div class="col-md-6">
+                            <input name="customer_name" id="customer_name" class="form-control" placeholder="Customer name" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <input name="customer_phone" id="customer_phone" class="form-control" placeholder="Phone">
+                        </div>
+
+                        <div class="col-md-6">
+                            <input name="customer_email" id="customer_email" type="email" class="form-control" placeholder="Email">
+                        </div>
+
+                        <div class="col-md-6">
+                            <input name="customer_gstin" id="customer_gstin" class="form-control" placeholder="GSTIN">
+                        </div>
+
+                        <div class="col-12">
+                            <textarea name="customer_address" id="customer_address" class="form-control" placeholder="Address" rows="3"></textarea>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+
+
+            <!-- Invoice Items -->
+            <div class="card border-0 shadow-sm">
+
+                <div class="card-body">
+
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+
+                        <h5 class="fw-bold mb-0">
+                            Invoice Items
+                        </h5>
+
+                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="addItem()">
+                        + Add Item
+                    </button>
+
+                    </div>
+
+
+                    <div id="items">
+
+                        <div class="item-row row g-2 mb-2">
+
+                            <div class="col-md-5">
+                                <input name="item_name[]" class="form-control item-name" placeholder="Item name" required>
+                            </div>
+
+                            <div class="col-md-2">
+                                <input name="item_qty[]" type="number" step="0.01" min="0" value="1" class="form-control qty" placeholder="Qty">
+                            </div>
+
+                            <div class="col-md-2">
+                                <input name="item_price[]" type="number" step="0.01" min="0" value="0" class="form-control price" placeholder="Price">
+                            </div>
+
+                            <div class="col-md-2">
+                                <input name="item_tax[]" type="number" step="0.01" min="0" value="18" class="form-control tax" placeholder="Tax %">
+                            </div>
+
+                            <div class="col-md-1">
+                                <button type="button" class="btn btn-outline-danger w-100 remove">
+                                ×
+                            </button>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <small class="text-muted">
+                    Columns: Item, Quantity, Price, Tax %
+                </small>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- RIGHT SIDE -->
+        <div class="col-lg-4">
+
+            <div class="card border-0 shadow-sm sticky-lg-top" style="top:20px">
+
+                <div class="card-body">
+
+                    <h5 class="fw-bold mb-3">
+                        Invoice Details
+                    </h5>
+
+
+                    <!-- Invoice Number -->
+
+                    <input name="invoice_number" value="{{ next_no }}" class="form-control mb-3" placeholder="Invoice number" required>
+
+
+                    <!-- Invoice Date -->
+                    <!-- Date is filled automatically by JavaScript -->
+
+                    <input name="date" id="invoiceDate" type="date" class="form-control mb-3" required>
+
+
+                    <!-- Due Date -->
+
+                    <input name="due_date" type="date" class="form-control mb-3">
+
+
+                    <!-- Payment Status -->
+
+                    <select name="payment_status" class="form-select mb-3">
+
+                    <option value="Pending">
+                        Pending
+                    </option>
+
+                    <option value="Paid">
+                        Paid
+                    </option>
+
+                    <option value="Partially Paid">
+                        Partially Paid
+                    </option>
+
+                </select>
+
+
+                    <!-- Discount -->
+
+                    <input name="discount" id="discount" type="number" step="0.01" min="0" value="0" class="form-control mb-3" placeholder="Discount">
+
+
+                    <!-- Summary -->
+
+                    <div class="summary">
+
+                        <div>
+                            <span>Subtotal</span>
+                            <strong id="subtotal">
+                            ₹0.00
+                        </strong>
+                        </div>
+
+                        <div>
+                            <span>Discount</span>
+                            <strong id="discountShow">
+                            ₹0.00
+                        </strong>
+                        </div>
+
+                        <div>
+                            <span>Tax</span>
+                            <strong id="tax">
+                            ₹0.00
+                        </strong>
+                        </div>
+
+                        <hr>
+
+                        <div class="grand">
+
+                            <span>
+                            Grand Total
+                        </span>
+
+                            <strong id="grand">
+                            ₹0.00
+                        </strong>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Notes -->
+
+                    <textarea name="notes" class="form-control mt-3" placeholder="Notes" rows="3"></textarea>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+    ```
+
+</form>
+
+{% endblock %} {% block scripts %}
+
+<script>
+    /* =========================================
+           SET TODAY'S DATE
+        ========================================= */
+
+    document.addEventListener("DOMContentLoaded", function() {
+
+        const dateInput = document.getElementById("invoiceDate");
+
+        if (dateInput) {
+
+            const today = new Date();
+
+            const year = today.getFullYear();
+
+            const month = String(today.getMonth() + 1).padStart(2, "0");
+
+            const day = String(today.getDate()).padStart(2, "0");
+
+            dateInput.value = `${year}-${month}-${day}`;
+
+        }
+
+    });
+
+
+    /* =========================================
+       ADD NEW ITEM
+    ========================================= */
+
+    function addItem() {
+
+        const firstRow = document.querySelector(".item-row");
+
+        const newRow = firstRow.cloneNode(true);
+
+        newRow.querySelectorAll("input").forEach(function(input) {
+
+            if (input.classList.contains("qty")) {
+
+                input.value = 1;
+
+            } else if (input.classList.contains("tax")) {
+
+                input.value = 18;
+
+            } else if (input.classList.contains("price")) {
+
+                input.value = 0;
+
+            } else {
+
+                input.value = "";
+
+            }
+
+        });
+
+        document.getElementById("items").appendChild(newRow);
+
+        bindEvents();
+
+        calculateInvoice();
+
+    }
+
+
+    /* =========================================
+       BIND EVENTS
+    ========================================= */
+
+    function bindEvents() {
+
+        document
+            .querySelectorAll(".item-row input")
+            .forEach(function(input) {
+
+                input.oninput = calculateInvoice;
+
+            });
+
+
+        document
+            .querySelectorAll(".remove")
+            .forEach(function(button) {
+
+                button.onclick = function() {
+
+                    const rows =
+                        document.querySelectorAll(".item-row");
+
+                    if (rows.length > 1) {
+
+                        button
+                            .closest(".item-row")
+                            .remove();
+
+                        calculateInvoice();
+
+                    }
+
+                };
+
+            });
+
+    }
+
+
+    /* =========================================
+       CALCULATE INVOICE
+    ========================================= */
+
+    function calculateInvoice() {
+
+        let subtotal = 0;
+
+        let taxTotal = 0;
+
+
+        document
+            .querySelectorAll(".item-row")
+            .forEach(function(row) {
+
+                const quantity =
+                    parseFloat(
+                        row.querySelector(".qty").value
+                    ) || 0;
+
+
+                const price =
+                    parseFloat(
+                        row.querySelector(".price").value
+                    ) || 0;
+
+
+                const taxRate =
+                    parseFloat(
+                        row.querySelector(".tax").value
+                    ) || 0;
+
+
+                const amount =
+                    quantity * price;
+
+
+                const taxAmount =
+                    amount * taxRate / 100;
+
+
+                subtotal += amount;
+
+                taxTotal += taxAmount;
+
+            });
+
+
+        const discount =
+            parseFloat(
+                document.getElementById("discount").value
+            ) || 0;
+
+
+        const taxableAmount =
+            Math.max(
+                0,
+                subtotal - discount
+            );
+
+
+        let finalTax = 0;
+
+
+        if (subtotal > 0) {
+
+            const taxRate =
+                taxTotal / subtotal;
+
+            finalTax =
+                taxableAmount * taxRate;
+
+        }
+
+
+        const grandTotal =
+            taxableAmount + finalTax;
+
+
+        document.getElementById("subtotal").textContent =
+            "₹" + subtotal.toFixed(2);
+
+
+        document.getElementById("discountShow").textContent =
+            "₹" + discount.toFixed(2);
+
+
+        document.getElementById("tax").textContent =
+            "₹" + finalTax.toFixed(2);
+
+
+        document.getElementById("grand").textContent =
+            "₹" + grandTotal.toFixed(2);
+
+    }
+
+
+    /* =========================================
+       EXISTING CUSTOMER SELECTION
+    ========================================= */
+
+    document
+        .getElementById("customerSelect")
+        .addEventListener("change", function() {
+
+            const selected =
+                this.options[this.selectedIndex];
+
+
+            if (!selected.value &&
+                !selected.dataset.name) {
+
+                return;
+
+            }
+
+
+            document.getElementById("customer_name").value =
+                selected.dataset.name || "";
+
+
+            document.getElementById("customer_phone").value =
+                selected.dataset.phone || "";
+
+
+            document.getElementById("customer_email").value =
+                selected.dataset.email || "";
+
+
+            document.getElementById("customer_address").value =
+                selected.dataset.address || "";
+
+
+            document.getElementById("customer_gstin").value =
+                selected.dataset.gstin || "";
+
+        });
+
+
+    /* =========================================
+       DISCOUNT EVENT
+    ========================================= */
+
+    document
+        .getElementById("discount")
+        .addEventListener(
+            "input",
+            calculateInvoice
+        );
+
+
+    /* =========================================
+       INITIALIZE
+    ========================================= */
+
+    bindEvents();
+
+    calculateInvoice();
+</script>
+
+{% endblock %}
