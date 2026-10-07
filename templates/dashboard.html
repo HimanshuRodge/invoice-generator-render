@@ -1,19 +1,23 @@
 {% extends "base.html" %} {% block content %}
 
 <!-- =========================================================
-     LOGIXIOUS DASHBOARD
-     ========================================================= -->
+     LOGIXIUS DASHBOARD
+========================================================= -->
 
 <div class="dashboard-page">
 
-    <!-- HERO SECTION -->
+    <!-- =====================================================
+         HERO SECTION
+    ====================================================== -->
+
     <div class="dashboard-hero mb-4">
 
         <div class="hero-content">
 
             <div>
+
                 <span class="hero-badge">
-                    ✨ LOGIXIOUS BUSINESS MANAGEMENT
+                    ✨ LOGIXIUS BUSINESS MANAGEMENT
                 </span>
 
                 <h1 class="hero-title">
@@ -31,38 +35,78 @@
                 <div class="hero-buttons">
 
                     <a href="{{ url_for('create_invoice') }}" class="btn btn-light btn-lg px-4 shadow-sm">
+
                         🧾 Create Invoice
+
                     </a>
 
                     <a href="{{ url_for('invoices') }}" class="btn btn-outline-light btn-lg px-4">
+
                         View Invoices
+
                     </a>
 
                 </div>
+
             </div>
+
+
+            <!-- =================================================
+                 HERO VISUAL
+            ================================================== -->
 
             <div class="hero-visual">
 
+                <!-- Invoice Floating Card -->
+
                 <div class="floating-card card-one">
+
                     <span>🧾</span>
+
                     <div>
-                        <small>Invoices</small>
-                        <strong>{{ invoice_count }}</strong>
+
+                        <small>
+                            Invoices
+                        </small>
+
+                        <strong>
+                            {{ invoice_count }}
+                        </strong>
+
                     </div>
+
                 </div>
+
+
+                <!-- Revenue Floating Card -->
 
                 <div class="floating-card card-two">
+
                     <span>💰</span>
+
                     <div>
-                        <small>Paid Revenue</small>
-                        <strong>₹{{ "%.2f"|format(revenue) }}</strong>
+
+                        <small>
+                            Paid Revenue
+                        </small>
+
+                        <strong>
+                            ₹{{ "%.2f"|format(revenue) }}
+                        </strong>
+
                     </div>
+
                 </div>
 
+
+                <!-- =================================================
+                     LOGIXIUS IMAGE LOGO
+                ================================================== -->
+
                 <div class="hero-circle">
-                    <div class="hero-logo">
-                        L
-                    </div>
+
+                    <img src="{{ url_for('static', filename='images/logo_logixius1.png') }}" alt="Logixius Logo" class="dashboard-hero-logo">
+
                 </div>
 
             </div>
@@ -74,11 +118,13 @@
 
     <!-- =====================================================
          STATISTICS
-         ===================================================== -->
+    ====================================================== -->
 
     <div class="row g-4 mb-4">
 
+
         <!-- TOTAL INVOICES -->
+
         <div class="col-xl-3 col-md-6">
 
             <div class="stat-card stat-blue">
@@ -104,7 +150,9 @@
                 </p>
 
                 <div class="stat-progress">
+
                     <div style="width: 78%;"></div>
+
                 </div>
 
             </div>
@@ -113,6 +161,7 @@
 
 
         <!-- CUSTOMERS -->
+
         <div class="col-xl-3 col-md-6">
 
             <div class="stat-card stat-purple">
@@ -138,7 +187,9 @@
                 </p>
 
                 <div class="stat-progress">
+
                     <div style="width: 65%;"></div>
+
                 </div>
 
             </div>
@@ -147,6 +198,7 @@
 
 
         <!-- PRODUCTS -->
+
         <div class="col-xl-3 col-md-6">
 
             <div class="stat-card stat-orange">
@@ -172,7 +224,9 @@
                 </p>
 
                 <div class="stat-progress">
+
                     <div style="width: 55%;"></div>
+
                 </div>
 
             </div>
@@ -181,6 +235,7 @@
 
 
         <!-- REVENUE -->
+
         <div class="col-xl-3 col-md-6">
 
             <div class="stat-card stat-green">
@@ -206,7 +261,9 @@
                 </p>
 
                 <div class="stat-progress">
+
                     <div style="width: 85%;"></div>
+
                 </div>
 
             </div>
@@ -218,7 +275,7 @@
 
     <!-- =====================================================
          FINANCIAL OVERVIEW
-         ===================================================== -->
+    ====================================================== -->
 
     <div class="row g-4 mb-4">
 
@@ -249,7 +306,9 @@
 
                 <div class="financial-grid">
 
+
                     <!-- BILLING -->
+
                     <div class="financial-item">
 
                         <div class="financial-icon billing">
@@ -272,6 +331,7 @@
 
 
                     <!-- PAID -->
+
                     <div class="financial-item">
 
                         <div class="financial-icon paid">
@@ -294,6 +354,7 @@
 
 
                     <!-- REMAINING -->
+
                     <div class="financial-item">
 
                         <div class="financial-icon remaining">
@@ -317,9 +378,10 @@
                 </div>
 
 
-                <!-- VISUAL BAR -->
+                <!-- PAYMENT PROGRESS -->
 
                 {% set billing = total_billing|default(0)|float %} {% set paid = total_paid|default(revenue)|float %} {% if billing > 0 %} {% set paid_percentage = (paid / billing * 100) %} {% else %} {% set paid_percentage = 0 %} {% endif %}
+
 
                 <div class="payment-progress-wrapper">
 
@@ -335,6 +397,7 @@
 
                     </div>
 
+
                     <div class="payment-progress">
 
                         <div class="payment-progress-bar" style="width: {{ paid_percentage }}%;">
@@ -349,7 +412,9 @@
         </div>
 
 
-        <!-- QUICK ACTIONS -->
+        <!-- =================================================
+             QUICK ACTIONS
+        ================================================== -->
 
         <div class="col-lg-4">
 
@@ -378,6 +443,7 @@
 
                 <div class="quick-actions">
 
+
                     <a href="{{ url_for('create_invoice') }}" class="quick-action">
 
                         <span class="quick-action-icon blue">
@@ -385,8 +451,15 @@
                         </span>
 
                         <div>
-                            <strong>Create Invoice</strong>
-                            <small>Generate a new invoice</small>
+
+                            <strong>
+                                Create Invoice
+                            </strong>
+
+                            <small>
+                                Generate a new invoice
+                            </small>
+
                         </div>
 
                         <span class="arrow">
@@ -403,8 +476,15 @@
                         </span>
 
                         <div>
-                            <strong>Customers</strong>
-                            <small>Manage customer records</small>
+
+                            <strong>
+                                Customers
+                            </strong>
+
+                            <small>
+                                Manage customer records
+                            </small>
+
                         </div>
 
                         <span class="arrow">
@@ -421,8 +501,15 @@
                         </span>
 
                         <div>
-                            <strong>Products</strong>
-                            <small>Manage product catalogue</small>
+
+                            <strong>
+                                Products
+                            </strong>
+
+                            <small>
+                                Manage product catalogue
+                            </small>
+
                         </div>
 
                         <span class="arrow">
@@ -439,8 +526,15 @@
                         </span>
 
                         <div>
-                            <strong>Invoice History</strong>
-                            <small>View all invoices</small>
+
+                            <strong>
+                                Invoice History
+                            </strong>
+
+                            <small>
+                                View all invoices
+                            </small>
+
                         </div>
 
                         <span class="arrow">
@@ -460,7 +554,7 @@
 
     <!-- =====================================================
          RECENT INVOICES
-         ===================================================== -->
+    ====================================================== -->
 
     <div class="recent-card">
 
@@ -478,10 +572,10 @@
 
             </div>
 
+
             <a href="{{ url_for('invoices') }}" class="view-all-btn">
 
-                View All
-                →
+                View All →
 
             </a>
 
@@ -553,7 +647,9 @@
                             <div class="customer-info">
 
                                 <div class="customer-avatar">
+
                                     {{ i.customer.name[:1]|upper }}
+
                                 </div>
 
                                 <span>
@@ -602,7 +698,9 @@
                         <td class="text-end">
 
                             <strong class="invoice-total">
+
                                 ₹{{ "%.2f"|format(i.grand_total) }}
+
                             </strong>
 
                         </td>
@@ -666,13 +764,13 @@
 
     <!-- =====================================================
          BRAND FOOTER
-         ===================================================== -->
+    ====================================================== -->
 
     <div class="dashboard-footer">
 
-        <strong>
-            LOGIXIOUS
-        </strong>
+        <!-- REAL LOGIXIUS LOGO -->
+
+        <img src="{{ url_for('static', filename='images/logo_logixius1.png') }}" alt="Logixius Logo" class="dashboard-footer-logo">
 
         <span>
             Transforming Ideas into Intelligent Solutions
@@ -685,20 +783,22 @@
 
 <!-- =========================================================
      DASHBOARD CSS
-     ========================================================= -->
+========================================================= -->
 
 <style>
     .dashboard-page {
         min-height: 100vh;
     }
-    /* HERO */
+    /* =====================================================
+       HERO
+    ===================================================== */
     
     .dashboard-hero {
         position: relative;
         overflow: hidden;
         border-radius: 24px;
         padding: 38px 45px;
-        background: radial-gradient(circle at 85% 20%, rgba(96, 165, 250, .45), transparent 30%), radial-gradient(circle at 70% 90%, rgba(168, 85, 247, .35), transparent 35%), linear-gradient(135deg, #172554 0%, #1e3a8a 45%, #2563eb 100%);
+        background: radial-gradient( circle at 85% 20%, rgba(96, 165, 250, .45), transparent 30%), radial-gradient( circle at 70% 90%, rgba(168, 85, 247, .35), transparent 35%), linear-gradient( 135deg, #172554 0%, #1e3a8a 45%, #2563eb 100%);
         color: white;
         box-shadow: 0 18px 45px rgba(30, 64, 175, .25);
     }
@@ -745,7 +845,9 @@
         display: flex;
         gap: 12px;
     }
-    /* HERO VISUAL */
+    /* =====================================================
+       HERO VISUAL
+    ====================================================== */
     
     .hero-visual {
         position: relative;
@@ -767,19 +869,24 @@
         border: 1px solid rgba(255, 255, 255, .2);
         box-shadow: 0 0 70px rgba(255, 255, 255, .15);
     }
+    /* =====================================================
+       REAL LOGIXIUS HERO LOGO
+    ====================================================== */
     
-    .hero-logo {
-        width: 90px;
-        height: 90px;
-        border-radius: 25px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: rgba(255, 255, 255, .95);
-        color: #1e3a8a;
-        font-size: 48px;
-        font-weight: 900;
+    .dashboard-hero-logo {
+        width: 105px;
+        height: 105px;
+        object-fit: contain;
+        display: block;
+        border: none;
+        outline: none;
+        box-shadow: none;
+        background: transparent;
+        padding: 0;
     }
+    /* =====================================================
+       FLOATING CARDS
+    ====================================================== */
     
     .floating-card {
         position: absolute;
@@ -816,7 +923,9 @@
         right: 0;
         bottom: 5px;
     }
-    /* STAT CARDS */
+    /* =====================================================
+       STAT CARDS
+    ====================================================== */
     
     .stat-card {
         border-radius: 20px;
@@ -912,7 +1021,9 @@
     .stat-green .stat-progress div {
         background: #16a34a;
     }
-    /* COMMON CARD */
+    /* =====================================================
+       COMMON CARD
+    ====================================================== */
     
     .overview-card,
     .quick-card,
@@ -961,7 +1072,9 @@
         justify-content: center;
         font-size: 21px;
     }
-    /* FINANCIAL GRID */
+    /* =====================================================
+       FINANCIAL GRID
+    ====================================================== */
     
     .financial-grid {
         display: grid;
@@ -1009,7 +1122,9 @@
         margin: 4px 0 0;
         font-weight: 800;
     }
-    /* PAYMENT PROGRESS */
+    /* =====================================================
+       PAYMENT PROGRESS
+    ====================================================== */
     
     .payment-progress-wrapper {
         margin-top: 25px;
@@ -1030,10 +1145,12 @@
     .payment-progress-bar {
         height: 100%;
         border-radius: 20px;
-        background: linear-gradient(90deg, #2563eb, #06b6d4);
+        background: linear-gradient( 90deg, #2563eb, #06b6d4);
         transition: width .8s ease;
     }
-    /* QUICK ACTIONS */
+    /* =====================================================
+       QUICK ACTIONS
+    ====================================================== */
     
     .quick-card {
         padding: 25px;
@@ -1113,7 +1230,9 @@
         color: #94a3b8;
         font-size: 18px;
     }
-    /* RECENT INVOICES */
+    /* =====================================================
+       RECENT INVOICES
+    ====================================================== */
     
     .recent-card {
         overflow: hidden;
@@ -1193,7 +1312,9 @@
     .invoice-total {
         color: #172554;
     }
-    /* STATUS */
+    /* =====================================================
+       STATUS
+    ====================================================== */
     
     .status-badge {
         display: inline-flex;
@@ -1219,7 +1340,9 @@
         background: #fee2e2;
         color: #dc2626;
     }
-    /* VIEW BUTTON */
+    /* =====================================================
+       VIEW BUTTON
+    ====================================================== */
     
     .view-btn {
         display: inline-block;
@@ -1237,7 +1360,9 @@
         background: #2563eb;
         color: white;
     }
-    /* EMPTY */
+    /* =====================================================
+       EMPTY
+    ====================================================== */
     
     .empty-state {
         text-align: center;
@@ -1256,7 +1381,9 @@
     .empty-state p {
         color: #64748b;
     }
-    /* FOOTER */
+    /* =====================================================
+       DASHBOARD FOOTER
+    ====================================================== */
     
     .dashboard-footer {
         text-align: center;
@@ -1264,9 +1391,17 @@
         color: #64748b;
     }
     
-    .dashboard-footer strong {
-        color: #172554;
-        font-size: 15px;
+    .dashboard-footer-logo {
+        width: 100px;
+        height: 55px;
+        object-fit: contain;
+        display: block;
+        margin: 0 auto 8px auto;
+        border: none;
+        outline: none;
+        box-shadow: none;
+        background: transparent;
+        padding: 0;
     }
     
     .dashboard-footer span {
@@ -1275,7 +1410,9 @@
         font-size: 11px;
         font-weight: 700;
     }
-    /* RESPONSIVE */
+    /* =====================================================
+       RESPONSIVE
+    ====================================================== */
     
     @media (max-width: 992px) {
         .hero-content {
@@ -1313,15 +1450,19 @@
 
 <!-- =========================================================
      SMALL INTERACTION SCRIPT
-     ========================================================= -->
+========================================================= -->
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
 
-        // Animate progress bars
+        /*
+         * Animate progress bars
+         */
+
         const bars = document.querySelectorAll(
             ".stat-progress div, .payment-progress-bar"
         );
+
 
         bars.forEach(function(bar) {
 
@@ -1329,27 +1470,41 @@
 
             bar.style.width = "0%";
 
+
             setTimeout(function() {
+
                 bar.style.width = targetWidth;
+
             }, 300);
 
         });
 
 
-        // Add subtle hover effect to cards
+        /*
+         * Add subtle hover effect
+         */
+
         const cards = document.querySelectorAll(
             ".stat-card, .quick-action, .financial-item"
         );
 
+
         cards.forEach(function(card) {
 
-            card.addEventListener("mouseenter", function() {
-                this.style.transition = "all .25s ease";
-            });
+            card.addEventListener(
+                "mouseenter",
+                function() {
+
+                    this.style.transition =
+                        "all .25s ease";
+
+                }
+            );
 
         });
 
     });
 </script>
+
 
 {% endblock %}

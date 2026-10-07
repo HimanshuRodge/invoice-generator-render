@@ -1,9 +1,258 @@
-{% extends "base.html" %}{% block content %}
-<div class="d-flex justify-content-between mb-4"><h2 class="fw-bold">Customers</h2><button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#customerModal">+ Add Customer</button></div>
-<div class="card border-0 shadow-sm"><div class="card-body table-responsive"><table class="table align-middle"><thead><tr><th>Name</th><th>Phone</th><th>Email</th><th>GSTIN</th><th></th></tr></thead><tbody>
-{% for c in customers %}<tr><td class="fw-semibold">{{ c.name }}</td><td>{{ c.phone }}</td><td>{{ c.email }}</td><td>{{ c.gstin or "-" }}</td><td><a class="btn btn-sm btn-outline-danger" href="{{ url_for('delete_customer', id=c._id) }}" onclick="return confirm('Delete customer?')">Delete</a></td></tr>
-{% else %}<tr><td colspan="5" class="text-center text-muted py-4">No customers found.</td></tr>{% endfor %}</tbody></table></div></div>
-<div class="modal fade" id="customerModal"><div class="modal-dialog"><form method="post" class="modal-content"><div class="modal-header"><h5>Add Customer</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body">
-<input name="name" class="form-control mb-3" placeholder="Customer name" required><input name="phone" class="form-control mb-3" placeholder="Phone"><input name="email" type="email" class="form-control mb-3" placeholder="Email"><textarea name="address" class="form-control mb-3" placeholder="Address"></textarea><input name="gstin" class="form-control" placeholder="GSTIN">
-</div><div class="modal-footer"><button class="btn btn-primary">Save Customer</button></div></form></div></div>
+{% extends "base.html" %} {% block content %}
+
+<!-- =====================================================
+     CUSTOMERS PAGE
+===================================================== -->
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+    ```
+    <!-- PAGE TITLE + LOGO -->
+
+    <div class="d-flex align-items-center gap-3">
+
+        <div class="customers-page-logo">
+            <img src="{{ url_for('static', filename='images/logo_logixius1.png') }}" alt="Logixius Logo">
+        </div>
+
+        <div>
+            <h2 class="fw-bold mb-1">
+                Customers
+            </h2>
+
+            <p class="text-muted mb-0">
+                Manage your customer records and information.
+            </p>
+        </div>
+
+    </div>
+
+
+    <!-- ADD CUSTOMER -->
+
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#customerModal">
+    <i class="bi bi-person-plus-fill me-1"></i>
+    Add Customer
+</button> ```
+
+</div>
+
+<!-- =====================================================
+     CUSTOMERS TABLE
+===================================================== -->
+
+<div class="card border-0 shadow-sm">
+
+    ```
+    <div class="card-body table-responsive">
+
+        <table class="table align-middle">
+
+            <thead>
+
+                <tr>
+
+                    <th>Name</th>
+                    <th>Phone</th>
+                    <th>Email</th>
+                    <th>GSTIN</th>
+                    <th></th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                {% for c in customers %}
+
+                <tr>
+
+                    <td class="fw-semibold">
+                        {{ c.name }}
+                    </td>
+
+                    <td>
+                        {{ c.phone }}
+                    </td>
+
+                    <td>
+                        {{ c.email }}
+                    </td>
+
+                    <td>
+                        {{ c.gstin or "-" }}
+                    </td>
+
+                    <td>
+
+                        <a class="btn btn-sm btn-outline-primary me-1" href="{{ url_for('edit_customer', id=c._id) }}">
+                            <i class="bi bi-pencil me-1"></i> Edit
+                        </a>
+
+                        <a class="btn btn-sm btn-outline-danger" href="{{ url_for('delete_customer', id=c._id) }}" onclick="return confirm('Delete customer?')">
+                            <i class="bi bi-trash me-1"></i> Delete
+                        </a>
+
+                    </td>
+
+                </tr>
+
+
+                {% else %}
+
+                <tr>
+
+                    <td colspan="5" class="text-center text-muted py-4">
+                        <i class="bi bi-people fs-2 d-block mb-2"></i> No customers found.
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+    ```
+
+</div>
+
+<!-- =====================================================
+     ADD CUSTOMER MODAL
+===================================================== -->
+
+<div class="modal fade" id="customerModal" tabindex="-1" aria-hidden="true">
+
+    ```
+    <div class="modal-dialog">
+
+        <form method="post" class="modal-content">
+
+            <!-- MODAL HEADER -->
+
+            <div class="modal-header">
+
+                <div class="d-flex align-items-center gap-2">
+
+                    <div class="modal-logo">
+
+                        <img src="{{ url_for('static', filename='images/logo_logixius1.png') }}" alt="Logixius Logo">
+
+                    </div>
+
+                    <div>
+
+                        <h5 class="modal-title mb-0">
+                            Add Customer
+                        </h5>
+
+                        <small class="text-muted">
+                        Logixius Customer Management
+                    </small>
+
+                    </div>
+
+                </div>
+
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+
+            </div>
+
+
+            <!-- MODAL BODY -->
+
+            <div class="modal-body">
+
+                <input name="name" class="form-control mb-3" placeholder="Customer name" required>
+
+                <input name="phone" class="form-control mb-3" placeholder="Phone">
+
+                <input name="email" type="email" class="form-control mb-3" placeholder="Email">
+
+                <textarea name="address" class="form-control mb-3" placeholder="Address"></textarea>
+
+                <input name="gstin" class="form-control" placeholder="GSTIN">
+
+            </div>
+
+
+            <!-- MODAL FOOTER -->
+
+            <div class="modal-footer">
+
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                Cancel
+            </button>
+
+                <button type="submit" class="btn btn-primary">
+                <i class="bi bi-check-circle me-1"></i>
+                Save Customer
+            </button>
+
+            </div>
+
+        </form>
+
+    </div>
+    ```
+
+</div>
+
+<!-- =====================================================
+     LOGIXIUS LOGO STYLING
+===================================================== -->
+
+<style>
+    .customers-page-logo {
+        width: 55px;
+        height: 55px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        overflow: hidden;
+        background: transparent;
+        border: none;
+        box-shadow: none;
+    }
+    
+    .customers-page-logo img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        display: block;
+    }
+    
+    .modal-logo {
+        width: 38px;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        overflow: hidden;
+        background: transparent;
+        border: none;
+    }
+    
+    .modal-logo img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        display: block;
+    }
+    
+    @media (max-width: 576px) {
+        .customers-page-logo {
+            width: 45px;
+            height: 45px;
+        }
+    }
+</style>
+
 {% endblock %}

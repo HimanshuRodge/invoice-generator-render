@@ -2,113 +2,200 @@
 <html lang="en">
 
 <head>
+
     <meta charset="utf-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>{{ title or "Logixius" }}</title>
+    <title>{{ title or "Logixius Invoice Management System" }}</title>
 
-    <!-- Bootstrap 5 -->
+
+    <!-- =====================================================
+         BOOTSTRAP 5
+    ====================================================== -->
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <!-- Custom CSS -->
+
+    <!-- =====================================================
+         BOOTSTRAP ICONS
+    ====================================================== -->
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+
+    <!-- =====================================================
+         CUSTOM CSS
+    ====================================================== -->
+
     <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+
 </head>
 
 
 <body>
 
+
     <!-- =====================================================
-     NAVIGATION BAR
-===================================================== -->
+         NAVIGATION BAR
+    ====================================================== -->
 
     <nav class="navbar navbar-expand-lg navbar-dark app-nav">
 
         <div class="container-fluid px-4">
 
-            <!-- BRAND -->
+
+            <!-- =================================================
+                 LOGIXIUS BRAND
+            ================================================== -->
+
             <a class="navbar-brand brand-logo" href="{{ url_for('dashboard') }}">
 
-                <div class="brand-name">
-                    LOGIXIUS
+
+                <!-- LOGO IMAGE -->
+
+                <div class="logo-container">
+
+                    <img src="{{ url_for('static', filename='images/logo_logixius1.png') }}" alt="Logixius Logo" class="logixius-logo">
+
+
                 </div>
 
-                <div class="brand-tagline">
-                    Transforming Ideas into Intelligent Solutions
+
+                <!-- BRAND TEXT -->
+
+                <div class="brand-text">
+
+                    <div class="brand-name">
+                        LOGIXIUS
+                    </div>
+
+                    <div class="brand-tagline">
+                        Transforming Ideas into Intelligent Solutions
+                    </div>
+
                 </div>
+
 
             </a>
 
 
-            <!-- MOBILE MENU BUTTON -->
+
+            <!-- =================================================
+                 MOBILE MENU BUTTON
+            ================================================== -->
+
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavigation" aria-controls="mainNavigation" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+
+                <span class="navbar-toggler-icon"></span>
+
+            </button>
 
 
-            <!-- NAVIGATION LINKS -->
+
+            <!-- =================================================
+                 NAVIGATION LINKS
+            ================================================== -->
+
             <div class="collapse navbar-collapse" id="mainNavigation">
+
 
                 <ul class="navbar-nav ms-auto align-items-lg-center">
 
-                    <!-- Dashboard -->
+
+                    <!-- DASHBOARD -->
+
                     <li class="nav-item">
+
                         <a class="nav-link" href="{{ url_for('dashboard') }}">
-                        Dashboard
-                    </a>
+
+                            <i class="bi bi-grid-1x2-fill me-1"></i> Dashboard
+
+                        </a>
+
                     </li>
 
 
-                    <!-- Customers -->
+
+                    <!-- CUSTOMERS -->
+
                     <li class="nav-item">
+
                         <a class="nav-link" href="{{ url_for('customers') }}">
-                        Customers
-                    </a>
+
+                            <i class="bi bi-people-fill me-1"></i> Customers
+
+                        </a>
+
                     </li>
 
 
-                    <!-- Products -->
+
+                    <!-- PRODUCTS -->
+
                     <li class="nav-item">
+
                         <a class="nav-link" href="{{ url_for('products') }}">
-                        Products
-                    </a>
+
+                            <i class="bi bi-box-seam-fill me-1"></i> Products
+
+                        </a>
+
                     </li>
 
 
-                    <!-- Invoices -->
+
+                    <!-- INVOICES -->
+
                     <li class="nav-item">
+
                         <a class="nav-link" href="{{ url_for('invoices') }}">
-                        Invoices
-                    </a>
+
+                            <i class="bi bi-receipt-cutoff me-1"></i> Invoices
+
+                        </a>
+
                     </li>
 
 
-                    <!-- New Invoice -->
+
+                    <!-- NEW INVOICE -->
+
                     <li class="nav-item ms-lg-3 mt-2 mt-lg-0">
 
-                        <a class="btn btn-light btn-sm px-3" href="{{ url_for('create_invoice') }}">
-                        + New Invoice
-                    </a>
+                        <a class="btn new-invoice-btn" href="{{ url_for('create_invoice') }}">
+
+                            <i class="bi bi-plus-lg me-1"></i> New Invoice
+
+                        </a>
 
                     </li>
+
 
                 </ul>
 
+
             </div>
+
 
         </div>
 
     </nav>
 
 
+
     <!-- =====================================================
-     MAIN CONTENT
-===================================================== -->
+         MAIN CONTENT
+    ====================================================== -->
 
     <main>
 
         <div class="container-fluid px-4 py-4">
 
-            <!-- FLASH MESSAGES -->
+
+            <!-- =================================================
+                 FLASH MESSAGES
+            ================================================== -->
 
             {% with messages = get_flashed_messages(with_categories=true) %} {% if messages %} {% for category, message in messages %}
 
@@ -116,50 +203,95 @@
 
                 {{ message }}
 
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
+                            </button>
+
 
             </div>
 
             {% endfor %} {% endif %} {% endwith %}
 
 
-            <!-- PAGE CONTENT -->
+
+            <!-- =================================================
+                 PAGE CONTENT
+            ================================================== -->
 
             {% block content %} {% endblock %}
+
 
         </div>
 
     </main>
 
 
+
     <!-- =====================================================
-     FOOTER
-===================================================== -->
+         FOOTER
+    ====================================================== -->
 
-    <footer class="text-center py-4 mt-5">
+    <footer class="site-footer">
 
-        <div class="fw-bold">
-            LOGIXIUS
+
+        <!-- FOOTER BRAND -->
+
+        <div class="footer-brand">
+
+
+            <!-- SAME LOGIXIUS LOGO -->
+
+            <div class="footer-logo-container">
+
+                <img src="{{ url_for('static', filename='images/logo_logixius1.png') }}" alt="Logixius Logo" class="footer-logo-image">
+
+            </div>
+
+
+            <!-- FOOTER TEXT -->
+
+            <div class="footer-brand-text">
+
+                <div class="footer-logo-name">
+                    LOGIXIUS
+                </div>
+
+                <small>
+                    Transforming Ideas into Intelligent Solutions
+                </small>
+
+            </div>
+
+
         </div>
 
-        <small class="text-muted fw-semibold">
-        Transforming Ideas into Intelligent Solutions
-    </small>
+
+
+        <!-- COPYRIGHT -->
+
+        <div class="footer-copy">
+
+            © 2026 Logixius Invoice Management System
+
+        </div>
+
 
     </footer>
 
 
+
     <!-- =====================================================
-     BOOTSTRAP JAVASCRIPT
-===================================================== -->
+         BOOTSTRAP JAVASCRIPT
+    ====================================================== -->
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
     </script>
 
 
+
     <!-- =====================================================
-     PAGE-SPECIFIC SCRIPTS
-===================================================== -->
+         PAGE-SPECIFIC SCRIPTS
+    ====================================================== -->
 
     {% block scripts %} {% endblock %}
 

@@ -1,8 +1,18 @@
+```css
 /* =====================================================
    GLOBAL
 ===================================================== */
 
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
 body {
+    margin: 0;
     background: #f5f7fb;
     color: #172033;
     font-family: "Inter", "Segoe UI", Arial, sans-serif;
@@ -14,27 +24,138 @@ body {
 ===================================================== */
 
 .app-nav {
-    background: linear-gradient( 135deg, #172554, #1e3a8a, #312e81);
-    box-shadow: 0 4px 20px rgba(15, 23, 42, 0.15);
+    min-height: 78px;
+    background: linear-gradient( 135deg, #111827 0%, #172554 35%, #1e3a8a 70%, #312e81 100%);
+    box-shadow: 0 5px 25px rgba(15, 23, 42, 0.18);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.app-nav .navbar-brand {
-    font-size: 24px;
-    letter-spacing: -0.5px;
+
+/* =====================================================
+   BRAND
+===================================================== */
+
+.brand-logo {
+    display: flex !important;
+    align-items: center;
+    gap: 13px;
+    text-decoration: none;
+    padding-top: 5px;
+    padding-bottom: 5px;
+    transition: all 0.25s ease;
 }
 
-.app-nav .navbar-brand span {
-    color: #60a5fa;
+.brand-logo:hover {
+    transform: translateY(-1px);
 }
+
+
+/* =====================================================
+   LOGIXIUS LOGO
+   NO BORDER / NO BACKGROUND
+===================================================== */
+
+.logo-container {
+    width: 58px;
+    height: 58px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    overflow: visible;
+}
+
+
+/* Actual LOGIXIUS image */
+
+.logixius-logo {
+    width: 58px;
+    height: 58px;
+    display: block;
+    object-fit: contain;
+    padding: 0;
+    margin: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    outline: none;
+}
+
+
+/* =====================================================
+   BRAND TEXT
+===================================================== */
+
+.brand-text {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.brand-name {
+    color: #ffffff;
+    font-size: 22px;
+    line-height: 1.1;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.brand-tagline {
+    margin-top: 4px;
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+}
+
+
+/* =====================================================
+   NAVIGATION LINKS
+===================================================== */
 
 .app-nav .nav-link {
-    font-weight: 500;
+    position: relative;
+    color: rgba(255, 255, 255, 0.88) !important;
+    font-size: 14px;
+    font-weight: 600;
     margin-left: 8px;
-    transition: 0.2s ease;
+    padding: 10px 12px !important;
+    border-radius: 9px;
+    transition: all 0.25s ease;
 }
 
 .app-nav .nav-link:hover {
-    color: #93c5fd !important;
+    color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.10);
+    transform: translateY(-1px);
+}
+
+
+/* =====================================================
+   NEW INVOICE BUTTON
+===================================================== */
+
+.new-invoice-btn {
+    color: #1e3a8a !important;
+    background: #ffffff;
+    border: none;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 10px 17px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.14);
+    transition: all 0.25s ease;
+}
+
+.new-invoice-btn:hover {
+    color: #ffffff !important;
+    background: #4f46e5;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(79, 70, 229, 0.35);
 }
 
 
@@ -77,16 +198,24 @@ body {
     font-size: 15px;
 }
 
+
+/* =====================================================
+   CREATE INVOICE BUTTON
+===================================================== */
+
 .create-invoice-btn {
     border: none;
     padding: 13px 22px;
     border-radius: 12px;
     background: linear-gradient( 135deg, #4f46e5, #2563eb);
+    color: #ffffff !important;
+    font-weight: 700;
     box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25);
     transition: all 0.25s ease;
 }
 
 .create-invoice-btn:hover {
+    color: #ffffff;
     transform: translateY(-3px);
     box-shadow: 0 14px 28px rgba(37, 99, 235, 0.3);
 }
@@ -113,7 +242,7 @@ body {
 }
 
 
-/* decorative circle */
+/* Decorative circle */
 
 .dashboard-stat-card::after {
     content: "";
@@ -127,7 +256,9 @@ body {
 }
 
 
-/* CARD COLORS */
+/* =====================================================
+   CARD COLORS
+===================================================== */
 
 .invoice-card {
     background: linear-gradient( 135deg, #4f46e5, #6366f1);
@@ -531,22 +662,93 @@ body {
 
 
 /* =====================================================
-   DASHBOARD FOOTER
+   FOOTER
 ===================================================== */
 
-.dashboard-footer {
+.site-footer {
+    margin-top: 40px;
+    padding: 28px 30px;
+    background: #ffffff;
+    border-top: 1px solid #e7ebf3;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 30px;
-    padding: 18px 4px;
+}
+
+
+/* Footer brand */
+
+.site-footer .footer-brand {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+}
+
+
+/* =====================================================
+   FOOTER LOGO IMAGE
+   SAME LOGO AS NAVBAR
+===================================================== */
+
+.footer-logo-container {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    overflow: visible;
+}
+
+.footer-logo-image {
+    width: 50px;
+    height: 50px;
+    display: block;
+    object-fit: contain;
+    padding: 0;
+    margin: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    outline: none;
+}
+
+
+/* Footer text */
+
+.footer-brand-text {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.footer-logo-name {
+    color: #172554;
+    font-weight: 800;
+    font-size: 16px;
+    letter-spacing: 0.8px;
+}
+
+.site-footer small {
+    color: #94a3b8 !important;
+    font-size: 10px;
+}
+
+.footer-copy {
     color: #94a3b8;
     font-size: 12px;
 }
 
-.dashboard-footer strong {
-    color: #4f46e5;
-    margin-right: 8px;
+
+/* =====================================================
+   REMOVE OLD FOOTER ICON
+===================================================== */
+
+.footer-logo-icon {
+    display: none !important;
 }
 
 
@@ -554,7 +756,37 @@ body {
    RESPONSIVE
 ===================================================== */
 
+@media (max-width: 991px) {
+    .brand-tagline {
+        display: none;
+    }
+    .app-nav .nav-link {
+        margin-left: 0;
+        margin-top: 4px;
+    }
+    .new-invoice-btn {
+        margin-bottom: 10px;
+    }
+}
+
 @media (max-width: 768px) {
+    .app-nav {
+        min-height: 70px;
+    }
+    /* Navbar logo */
+    .logo-container {
+        width: 46px;
+        height: 46px;
+    }
+    .logixius-logo {
+        width: 46px;
+        height: 46px;
+    }
+    /* Brand name */
+    .brand-name {
+        font-size: 19px;
+    }
+    /* Dashboard */
     .dashboard-header {
         flex-direction: column;
         align-items: flex-start;
@@ -570,14 +802,28 @@ body {
     .create-invoice-btn {
         width: 100%;
     }
+    /* Recent invoices */
     .recent-header {
         flex-direction: column;
         align-items: flex-start;
         gap: 12px;
     }
-    .dashboard-footer {
+    /* Footer */
+    .site-footer {
         flex-direction: column;
-        gap: 8px;
+        gap: 15px;
         text-align: center;
+    }
+    .site-footer .footer-brand {
+        justify-content: center;
+    }
+    /* Footer logo */
+    .footer-logo-container {
+        width: 45px;
+        height: 45px;
+    }
+    .footer-logo-image {
+        width: 45px;
+        height: 45px;
     }
 }

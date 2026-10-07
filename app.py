@@ -5,7 +5,8 @@ from flask import (
     redirect,
     url_for,
     flash,
-    send_file
+    send_file,
+    jsonify
 )
 
 from flask_pymongo import PyMongo
@@ -17,10 +18,12 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors
 from reportlab.lib.units import mm
+from reportlab.lib.utils import ImageReader
 
 import os
 import io
 import uuid
+import json
 
 
 # =========================================================
@@ -54,23 +57,993 @@ COMPANY_TAGLINE = (
     "Transforming Ideas into Intelligent Solutions"
 )
 
+LOGO_PATH = os.path.join(
+    app.root_path,
+    "static",
+    "images",
+    "logo_logixius1.png"
+)
+
+
+# =========================================================
+# GST / E-INVOICE CONFIGURATION
+# =========================================================
+#
+# IMPORTANT:
+#
+# Put your actual company GST details in .env
+#
+# Example:
+#
+# SELLER_GSTIN=27XXXXXXXXXX1Z5
+# SELLER_LEGAL_NAME=LOGIXIUS
+# SELLER_TRADE_NAME=LOGIXIUS
+# SELLER_ADDRESS1=Your Business Address
+# SELLER_ADDRESS2=
+# SELLER_LOCATION=NAGPUR
+# SELLER_PINCODE=440001
+# SELLER_STATE_CODE=27
+# SELLER_STATE_NAME=Maharashtra
+# SELLER_PHONE=9876543210
+# SELLER_EMAIL=example@gmail.com
+#
+# DO NOT use example GSTIN for actual GST submission.
+#
+
+SELLER_GSTIN = os.getenv(
+    "SELLER_GSTIN",
+    ""
+).strip()
+
+SELLER_LEGAL_NAME = os.getenv(
+    "SELLER_LEGAL_NAME",
+    COMPANY_NAME
+).strip()
+
+SELLER_TRADE_NAME = os.getenv(
+    "SELLER_TRADE_NAME",
+    COMPANY_NAME
+).strip()
+
+SELLER_ADDRESS1 = os.getenv(
+    "SELLER_ADDRESS1",
+    ""
+).strip()
+
+SELLER_ADDRESS2 = os.getenv(
+    "SELLER_ADDRESS2",
+    ""
+).strip()
+
+SELLER_LOCATION = os.getenv(
+    "SELLER_LOCATION",
+    ""
+).strip()
+
+SELLER_PINCODE = os.getenv(
+    "SELLER_PINCODE",
+    ""
+).strip()
+
+SELLER_STATE_CODE = os.getenv(
+    "SELLER_STATE_CODE",
+    ""
+).strip()
+
+SELLER_STATE_NAME = os.getenv(
+    "SELLER_STATE_NAME",
+    ""
+).strip()
+
+SELLER_PHONE = os.getenv(
+    "SELLER_PHONE",
+    ""
+).strip()
+
+SELLER_EMAIL = os.getenv(
+    "SELLER_EMAIL",
+    ""
+).strip()
+
+
+# =========================================================
+# GST HELPERS
+# =========================================================
+
+def get_state_code_from_gstin(gstin):
+    """
+    First two digits of a GSTIN represent
+    the state code.
+
+    Example:
+    27XXXXXXXXXX1Z5 -> 27
+    """
+
+    gstin = str(gstin or "").strip()
+
+    if len(gstin) >= 2 and gstin[:2].isdigit():
+        return gstin[:2]
+
+    return ""
+
+
+def get_customer_state_code(customer):
+    """
+    Get buyer state code.
+
+    Priority:
+    1. customer state_code
+    2. customer GSTIN first two digits
+    """
+
+    state_code = str(
+        customer.get(
+            "state_code",
+            ""
+        ) or ""
+    ).strip()
+
+    if state_code:
+        return state_code
+
+    return get_state_code_from_gstin(
+        customer.get(
+            "gstin",
+            ""
+        )
+    )
+
+
+def calculate_gst_for_invoice(invoice):
+    """
+    Calculate GST split for e-invoice JSON.
+
+    If seller and buyer are in the same state:
+        CGST + SGST
+
+    If seller and buyer are in different states:
+        IGST
+    """
+
+    seller_state = str(
+        SELLER_STATE_CODE or ""
+    ).strip()
+
+    customer = invoice.get(
+        "customer",
+        {}
+    )
+
+    buyer_state = get_customer_state_code(
+        customer
+    )
+
+    total_tax = money(
+        invoice.get(
+            "tax",
+            0
+        )
+    )
+
+    if (
+        seller_state
+        and buyer_state
+        and seller_state == buyer_state
+    ):
+
+        cgst = money(
+            total_tax / 2
+        )
+
+        sgst = money(
+            total_tax - cgst
+        )
+
+        igst = 0.0
+
+    else:
+
+        cgst = 0.0
+        sgst = 0.0
+        igst = total_tax
+
+    return {
+        "cgst": cgst,
+        "sgst": sgst,
+        "igst": igst
+    }
+
+
+# =========================================================
+# GST JSON GENERATOR
+# =========================================================
+
+def generate_gst_einvoice_json(invoice):
+    """
+    Generate GST e-Invoice INV-01 style JSON.
+
+    This creates the source JSON required for
+    e-Invoice reporting.
+
+    IMPORTANT:
+    Actual GST portal/IRP validation requires
+    all applicable mandatory fields and correct
+    taxpayer information.
+    """
+
+    customer = invoice.get(
+        "customer",
+        {}
+    )
+
+    items = invoice.get(
+        "items",
+        []
+    )
+
+    invoice_number = str(
+        invoice.get(
+            "invoice_number",
+            ""
+        )
+    ).strip()
+
+    invoice_date = str(
+        invoice.get(
+            "date",
+            ""
+        )
+    ).strip()
+
+    # -----------------------------------------------------
+    # GSTIN
+    # -----------------------------------------------------
+
+    buyer_gstin = str(
+        customer.get(
+            "gstin",
+            ""
+        ) or ""
+    ).strip()
+
+    # -----------------------------------------------------
+    # STATE
+    # -----------------------------------------------------
+
+    buyer_state_code = (
+        get_customer_state_code(
+            customer
+        )
+    )
+
+    seller_state_code = (
+        SELLER_STATE_CODE
+    )
+
+    # -----------------------------------------------------
+    # TAX CALCULATION
+    # -----------------------------------------------------
+
+    gst_split = calculate_gst_for_invoice(
+        invoice
+    )
+
+    cgst_total = gst_split["cgst"]
+    sgst_total = gst_split["sgst"]
+    igst_total = gst_split["igst"]
+
+    # -----------------------------------------------------
+    # SUPPLY TYPE
+    # -----------------------------------------------------
+
+    supply_type = (
+        "B2B"
+        if buyer_gstin
+        else "B2C"
+    )
+
+    # -----------------------------------------------------
+    # ITEM LIST
+    # -----------------------------------------------------
+
+    item_list = []
+
+    calculated_taxable_total = 0.0
+    calculated_tax_total = 0.0
+
+    for index, item in enumerate(
+        items,
+        start=1
+    ):
+
+        quantity = money(
+            item.get(
+                "quantity",
+                0
+            )
+        )
+
+        unit_price = money(
+            item.get(
+                "price",
+                0
+            )
+        )
+
+        gross_amount = money(
+            quantity * unit_price
+        )
+
+        item_discount = money(
+            item.get(
+                "discount",
+                0
+            )
+        )
+
+        taxable_value = money(
+            max(
+                0,
+                gross_amount - item_discount
+            )
+        )
+
+        gst_rate = money(
+            item.get(
+                "tax",
+                0
+            )
+        )
+
+        item_tax = money(
+            taxable_value * gst_rate / 100
+        )
+
+        calculated_taxable_total += (
+            taxable_value
+        )
+
+        calculated_tax_total += (
+            item_tax
+        )
+
+        # -------------------------------------------------
+        # GST SPLIT PER ITEM
+        # -------------------------------------------------
+
+        if (
+            seller_state_code
+            and buyer_state_code
+            and seller_state_code == buyer_state_code
+        ):
+
+            item_cgst = money(
+                item_tax / 2
+            )
+
+            item_sgst = money(
+                item_tax - item_cgst
+            )
+
+            item_igst = 0.0
+
+        else:
+
+            item_cgst = 0.0
+            item_sgst = 0.0
+            item_igst = item_tax
+
+        # -------------------------------------------------
+        # HSN
+        # -------------------------------------------------
+
+        hsn_code = str(
+            item.get(
+                "hsn",
+                item.get(
+                    "hsn_code",
+                    ""
+                )
+            ) or ""
+        ).strip()
+
+        # -------------------------------------------------
+        # UQC
+        # -------------------------------------------------
+
+        unit = str(
+            item.get(
+                "unit",
+                "NOS"
+            ) or "NOS"
+        ).strip().upper()
+
+        # -------------------------------------------------
+        # SERVICE
+        # -------------------------------------------------
+
+        is_service = str(
+            item.get(
+                "is_service",
+                "N"
+            ) or "N"
+        ).upper()
+
+        # -------------------------------------------------
+        # ITEM JSON
+        # -------------------------------------------------
+
+        item_json = {
+
+            "SlNo":
+                str(index),
+
+            "PrdDesc":
+                str(
+                    item.get(
+                        "name",
+                        ""
+                    )
+                )[:300],
+
+            "IsServc":
+                "Y"
+                if is_service == "Y"
+                else "N",
+
+            "HsnCd":
+                hsn_code,
+
+            "Qty":
+                quantity,
+
+            "Unit":
+                unit,
+
+            "UnitPrice":
+                unit_price,
+
+            "TotAmt":
+                gross_amount,
+
+            "Discount":
+                item_discount,
+
+            "AssAmt":
+                taxable_value,
+
+            "GstRt":
+                gst_rate,
+
+            "IgstAmt":
+                item_igst,
+
+            "CgstAmt":
+                item_cgst,
+
+            "SgstAmt":
+                item_sgst,
+
+            "TotItemVal":
+                money(
+                    taxable_value
+                    + item_tax
+                )
+        }
+
+        item_list.append(
+            item_json
+        )
+
+    # -----------------------------------------------------
+    # TOTALS
+    # -----------------------------------------------------
+
+    taxable_value = money(
+        invoice.get(
+            "taxable",
+            calculated_taxable_total
+        )
+    )
+
+    total_invoice_value = money(
+        invoice.get(
+            "grand_total",
+            taxable_value
+            + calculated_tax_total
+        )
+    )
+
+    discount_total = money(
+        invoice.get(
+            "discount",
+            0
+        )
+    )
+
+    # -----------------------------------------------------
+    # BUYER STATE
+    # -----------------------------------------------------
+
+    buyer_state_name = str(
+        customer.get(
+            "state",
+            ""
+        ) or ""
+    ).strip()
+
+    buyer_location = str(
+        customer.get(
+            "location",
+            customer.get(
+                "city",
+                ""
+            )
+        ) or ""
+    ).strip()
+
+    buyer_pincode = str(
+        customer.get(
+            "pincode",
+            ""
+        ) or ""
+    ).strip()
+
+    buyer_address = str(
+        customer.get(
+            "address",
+            ""
+        ) or ""
+    ).strip()
+
+    # -----------------------------------------------------
+    # BUYER LEGAL NAME
+    # -----------------------------------------------------
+
+    buyer_name = str(
+        customer.get(
+            "name",
+            ""
+        )
+    ).strip()
+
+    # -----------------------------------------------------
+    # MAIN GST JSON
+    # -----------------------------------------------------
+
+    gst_json = {
+
+        "Version": "1.1",
+
+        "TranDtls": {
+
+            "TaxSch": "GST",
+
+            "SupTyp":
+                supply_type,
+
+            "RegRev": "N",
+
+            "IgstOnIntra":
+                "N"
+        },
+
+        "DocDtls": {
+
+            "Typ": "INV",
+
+            "No":
+                invoice_number,
+
+            "Dt":
+                datetime.strptime(
+                    invoice_date,
+                    "%Y-%m-%d"
+                ).strftime(
+                    "%d/%m/%Y"
+                )
+            if invoice_date
+            else datetime.now().strftime(
+                "%d/%m/%Y"
+            )
+        },
+
+        "SellerDtls": {
+
+            "Gstin":
+                SELLER_GSTIN,
+
+            "LglNm":
+                SELLER_LEGAL_NAME,
+
+            "TrdNm":
+                SELLER_TRADE_NAME,
+
+            "Addr1":
+                SELLER_ADDRESS1,
+
+            "Addr2":
+                SELLER_ADDRESS2,
+
+            "Loc":
+                SELLER_LOCATION,
+
+            "Pin":
+                int(
+                    SELLER_PINCODE
+                )
+                if SELLER_PINCODE.isdigit()
+                else 0,
+
+            "Stcd":
+                seller_state_code,
+
+            "Ph":
+                SELLER_PHONE,
+
+            "Em":
+                SELLER_EMAIL
+        },
+
+        "BuyerDtls": {
+
+            "Gstin":
+                buyer_gstin
+                if buyer_gstin
+                else "URP",
+
+            "LglNm":
+                buyer_name,
+
+            "TrdNm":
+                buyer_name,
+
+            "Pos":
+                buyer_state_code,
+
+            "Addr1":
+                buyer_address,
+
+            "Loc":
+                buyer_location,
+
+            "Pin":
+                int(
+                    buyer_pincode
+                )
+                if buyer_pincode.isdigit()
+                else 0,
+
+            "Stcd":
+                buyer_state_code,
+
+            "Ph":
+                str(
+                    customer.get(
+                        "phone",
+                        ""
+                    ) or ""
+                ),
+
+            "Em":
+                str(
+                    customer.get(
+                        "email",
+                        ""
+                    ) or ""
+                )
+        },
+
+        "ItemList":
+            item_list,
+
+        "ValDtls": {
+
+            "AssVal":
+                taxable_value,
+
+            "CgstVal":
+                cgst_total,
+
+            "SgstVal":
+                sgst_total,
+
+            "IgstVal":
+                igst_total,
+
+            "Discount":
+                discount_total,
+
+            "OthChrg":
+                0.0,
+
+            "RndOffAmt":
+                0.0,
+
+            "TotInvVal":
+                total_invoice_value
+        },
+
+        "PayDtls": {
+
+            "PaidAmt":
+                money(
+                    invoice.get(
+                        "paid_amount",
+                        get_paid_amount(
+                            invoice
+                        )
+                    )
+                ),
+
+            "PaymtDue":
+                money(
+                    invoice.get(
+                        "remaining_amount",
+                        get_remaining_amount(
+                            invoice
+                        )
+                    )
+                )
+        },
+
+        "InvRm":
+            str(
+                invoice.get(
+                    "notes",
+                    ""
+                ) or ""
+            )
+    }
+
+    return gst_json
+
+
+# =========================================================
+# GST JSON DOWNLOAD
+# =========================================================
+
+@app.route(
+    "/invoice/<invoice_id>/gst-json"
+)
+def invoice_gst_json(invoice_id):
+
+    invoice = mongo.db.invoices.find_one({
+        "_id":
+            ObjectId(invoice_id)
+    })
+
+    if not invoice:
+
+        return (
+            "Invoice not found",
+            404
+        )
+
+    try:
+
+        gst_data = (
+            generate_gst_einvoice_json(
+                invoice
+            )
+        )
+
+    except Exception as e:
+
+        print(
+            "GST JSON generation error:",
+            e
+        )
+
+        return (
+            f"Unable to generate GST JSON: {e}",
+            500
+        )
+
+    # -----------------------------------------------------
+    # CREATE JSON FILE
+    # -----------------------------------------------------
+
+    json_data = json.dumps(
+        gst_data,
+        indent=4,
+        ensure_ascii=False
+    )
+
+    buffer = io.BytesIO(
+        json_data.encode(
+            "utf-8"
+        )
+    )
+
+    buffer.seek(0)
+
+    filename = (
+        f"{invoice.get('invoice_number', 'invoice')}"
+        f"_GST_EINVOICE.json"
+    )
+
+    return send_file(
+        buffer,
+        as_attachment=True,
+        download_name=filename,
+        mimetype="application/json"
+    )
+
+
+# =========================================================
+# GST JSON VIEW / API
+# =========================================================
+
+@app.route(
+    "/invoice/<invoice_id>/gst-json/view"
+)
+def invoice_gst_json_view(invoice_id):
+
+    invoice = mongo.db.invoices.find_one({
+        "_id":
+            ObjectId(invoice_id)
+    })
+
+    if not invoice:
+
+        return (
+            "Invoice not found",
+            404
+        )
+
+    try:
+
+        gst_data = (
+            generate_gst_einvoice_json(
+                invoice
+            )
+        )
+
+    except Exception as e:
+
+        return (
+            jsonify({
+                "success": False,
+                "error": str(e)
+            }),
+            500
+        )
+
+    return jsonify(
+        gst_data
+    )
+
+
+# =========================================================
+# LOGO HELPER
+# =========================================================
+
+def get_logo_path():
+
+    if os.path.exists(
+        LOGO_PATH
+    ):
+
+        return LOGO_PATH
+
+    return None
+
+
+def draw_logo(
+    canvas_obj,
+    x,
+    y,
+    width,
+    height,
+    preserve_aspect_ratio=True
+):
+
+    logo_path = get_logo_path()
+
+    if not logo_path:
+
+        return False
+
+    try:
+
+        logo = ImageReader(
+            logo_path
+        )
+
+        if preserve_aspect_ratio:
+
+            image_width, image_height = (
+                logo.getSize()
+            )
+
+            if (
+                image_width <= 0
+                or image_height <= 0
+            ):
+
+                return False
+
+            scale = min(
+                width / image_width,
+                height / image_height
+            )
+
+            draw_width = (
+                image_width * scale
+            )
+
+            draw_height = (
+                image_height * scale
+            )
+
+            draw_x = (
+                x
+                + (
+                    width
+                    - draw_width
+                ) / 2
+            )
+
+            draw_y = (
+                y
+                + (
+                    height
+                    - draw_height
+                ) / 2
+            )
+
+        else:
+
+            draw_x = x
+            draw_y = y
+            draw_width = width
+            draw_height = height
+
+        canvas_obj.drawImage(
+            logo,
+            draw_x,
+            draw_y,
+            width=draw_width,
+            height=draw_height,
+            preserveAspectRatio=True,
+            mask="auto"
+        )
+
+        return True
+
+    except Exception as e:
+
+        print(
+            "Logo could not be added to PDF:",
+            e
+        )
+
+        return False
+
 
 # =========================================================
 # HELPER FUNCTIONS
 # =========================================================
 
 def money(value):
+
     try:
-        return round(float(value), 2)
-    except (TypeError, ValueError):
+
+        return round(
+            float(value),
+            2
+        )
+
+    except (
+        TypeError,
+        ValueError
+    ):
+
         return 0.0
 
 
 def get_paid_amount(invoice):
-    """
-    Calculate total amount received
-    from all payments.
-    """
 
     payments = invoice.get(
         "payments",
@@ -88,13 +1061,12 @@ def get_paid_amount(invoice):
             )
         )
 
-    return money(total_paid)
+    return money(
+        total_paid
+    )
 
 
 def get_remaining_amount(invoice):
-    """
-    Calculate remaining invoice amount.
-    """
 
     grand_total = money(
         invoice.get(
@@ -115,18 +1087,17 @@ def get_remaining_amount(invoice):
     )
 
 
-def update_invoice_payment_status(invoice_id):
-    """
-    Update paid amount,
-    remaining amount and
-    payment status.
-    """
+def update_invoice_payment_status(
+    invoice_id
+):
 
     invoice = mongo.db.invoices.find_one({
-        "_id": ObjectId(invoice_id)
+        "_id":
+            ObjectId(invoice_id)
     })
 
     if not invoice:
+
         return
 
     grand_total = money(
@@ -163,11 +1134,10 @@ def update_invoice_payment_status(invoice_id):
         status = "Pending"
 
     mongo.db.invoices.update_one(
-
         {
-            "_id": ObjectId(invoice_id)
+            "_id":
+                ObjectId(invoice_id)
         },
-
         {
             "$set": {
 
@@ -249,29 +1219,20 @@ def dashboard():
         total_remaining += remaining
 
     return render_template(
-
         "dashboard.html",
-
         invoices=invoices,
-
         customers=customers,
-
         products=products,
-
         invoice_count=invoice_count,
-
         revenue=money(
             total_paid
         ),
-
         total_billing=money(
             total_billing
         ),
-
         total_paid=money(
             total_paid
         ),
-
         total_remaining=money(
             total_remaining
         )
@@ -356,7 +1317,8 @@ def customers():
 def delete_customer(id):
 
     mongo.db.customers.delete_one({
-        "_id": ObjectId(id)
+        "_id":
+            ObjectId(id)
     })
 
     flash(
@@ -366,6 +1328,44 @@ def delete_customer(id):
 
     return redirect(
         url_for("customers")
+    )
+
+
+@app.route(
+    "/customers/edit/<id>",
+    methods=["GET", "POST"]
+)
+def edit_customer(id):
+
+    customer = mongo.db.customers.find_one({
+        "_id": ObjectId(id)
+    })
+
+    if not customer:
+        flash("Customer not found.", "danger")
+        return redirect(url_for("customers"))
+
+    if request.method == "POST":
+        mongo.db.customers.update_one(
+            {"_id": ObjectId(id)},
+            {
+                "$set": {
+                    "name": request.form.get("name", "").strip(),
+                    "phone": request.form.get("phone", "").strip(),
+                    "email": request.form.get("email", "").strip(),
+                    "address": request.form.get("address", "").strip(),
+                    "gstin": request.form.get("gstin", "").strip(),
+                    "updated_at": datetime.now()
+                }
+            }
+        )
+
+        flash("Customer updated successfully.", "success")
+        return redirect(url_for("customers"))
+
+    return render_template(
+        "edit_customer.html",
+        customer=customer
     )
 
 
@@ -439,7 +1439,8 @@ def products():
 def delete_product(id):
 
     mongo.db.products.delete_one({
-        "_id": ObjectId(id)
+        "_id":
+            ObjectId(id)
     })
 
     flash(
@@ -449,6 +1450,42 @@ def delete_product(id):
 
     return redirect(
         url_for("products")
+    )
+
+
+@app.route(
+    "/products/edit/<id>",
+    methods=["GET", "POST"]
+)
+def edit_product(id):
+
+    product = mongo.db.products.find_one({
+        "_id": ObjectId(id)
+    })
+
+    if not product:
+        flash("Product not found.", "danger")
+        return redirect(url_for("products"))
+
+    if request.method == "POST":
+        mongo.db.products.update_one(
+            {"_id": ObjectId(id)},
+            {
+                "$set": {
+                    "name": request.form.get("name", "").strip(),
+                    "price": money(request.form.get("price", 0)),
+                    "tax": money(request.form.get("tax", 18)),
+                    "updated_at": datetime.now()
+                }
+            }
+        )
+
+        flash("Product updated successfully.", "success")
+        return redirect(url_for("products"))
+
+    return render_template(
+        "edit_product.html",
+        product=product
     )
 
 
@@ -542,6 +1579,31 @@ def create_invoice():
                 request.form.get(
                     "customer_gstin",
                     ""
+                ),
+
+            # Optional GST fields
+            "state":
+                request.form.get(
+                    "customer_state",
+                    ""
+                ),
+
+            "state_code":
+                request.form.get(
+                    "customer_state_code",
+                    ""
+                ),
+
+            "pincode":
+                request.form.get(
+                    "customer_pincode",
+                    ""
+                ),
+
+            "location":
+                request.form.get(
+                    "customer_location",
+                    ""
                 )
         }
 
@@ -561,19 +1623,36 @@ def create_invoice():
             "item_tax[]"
         )
 
+        # Optional GST fields
+        hsns = request.form.getlist(
+            "item_hsn[]"
+        )
+
+        units = request.form.getlist(
+            "item_unit[]"
+        )
+
         items = []
 
         subtotal = 0.0
         tax_total = 0.0
 
-        for n, q, p, t in zip(
-            names,
-            qtys,
-            prices,
-            taxes
+        for i, (
+            n,
+            q,
+            p,
+            t
+        ) in enumerate(
+            zip(
+                names,
+                qtys,
+                prices,
+                taxes
+            )
         ):
 
             if not n.strip():
+
                 continue
 
             qty = money(q)
@@ -590,6 +1669,18 @@ def create_invoice():
 
             subtotal += amount
             tax_total += tax_amount
+
+            hsn = (
+                hsns[i]
+                if i < len(hsns)
+                else ""
+            )
+
+            unit = (
+                units[i]
+                if i < len(units)
+                else "NOS"
+            )
 
             items.append({
 
@@ -609,7 +1700,15 @@ def create_invoice():
                     amount,
 
                 "tax_amount":
-                    tax_amount
+                    tax_amount,
+
+                "hsn":
+                    hsn.strip(),
+
+                "unit":
+                    unit.strip().upper()
+                    if unit.strip()
+                    else "NOS"
             })
 
         discount = money(
@@ -631,7 +1730,9 @@ def create_invoice():
         )
 
         final_tax = money(
-            taxable * tax_rate / 100
+            taxable
+            * tax_rate
+            / 100
         )
 
         total = money(
@@ -747,13 +1848,9 @@ def create_invoice():
     )
 
     return render_template(
-
         "create_invoice.html",
-
         products=products,
-
         customers=customers,
-
         next_no=
             f"INV-{datetime.now().year}-{next_no:04d}"
     )
@@ -770,10 +1867,8 @@ def create_invoice():
 def edit_invoice(invoice_id):
 
     invoice = mongo.db.invoices.find_one({
-
         "_id":
             ObjectId(invoice_id)
-
     })
 
     if not invoice:
@@ -819,6 +1914,30 @@ def edit_invoice(invoice_id):
                 request.form.get(
                     "customer_gstin",
                     ""
+                ),
+
+            "state":
+                request.form.get(
+                    "customer_state",
+                    ""
+                ),
+
+            "state_code":
+                request.form.get(
+                    "customer_state_code",
+                    ""
+                ),
+
+            "pincode":
+                request.form.get(
+                    "customer_pincode",
+                    ""
+                ),
+
+            "location":
+                request.form.get(
+                    "customer_location",
+                    ""
                 )
         }
 
@@ -838,19 +1957,35 @@ def edit_invoice(invoice_id):
             "item_tax[]"
         )
 
+        hsns = request.form.getlist(
+            "item_hsn[]"
+        )
+
+        units = request.form.getlist(
+            "item_unit[]"
+        )
+
         items = []
 
         subtotal = 0.0
         tax_total = 0.0
 
-        for n, q, p, t in zip(
-            names,
-            qtys,
-            prices,
-            taxes
+        for i, (
+            n,
+            q,
+            p,
+            t
+        ) in enumerate(
+            zip(
+                names,
+                qtys,
+                prices,
+                taxes
+            )
         ):
 
             if not n.strip():
+
                 continue
 
             qty = money(q)
@@ -867,6 +2002,18 @@ def edit_invoice(invoice_id):
 
             subtotal += amount
             tax_total += tax_amount
+
+            hsn = (
+                hsns[i]
+                if i < len(hsns)
+                else ""
+            )
+
+            unit = (
+                units[i]
+                if i < len(units)
+                else "NOS"
+            )
 
             items.append({
 
@@ -886,7 +2033,15 @@ def edit_invoice(invoice_id):
                     amount,
 
                 "tax_amount":
-                    tax_amount
+                    tax_amount,
+
+                "hsn":
+                    hsn.strip(),
+
+                "unit":
+                    unit.strip().upper()
+                    if unit.strip()
+                    else "NOS"
             })
 
         discount = money(
@@ -908,14 +2063,14 @@ def edit_invoice(invoice_id):
         )
 
         final_tax = money(
-            taxable * tax_rate / 100
+            taxable
+            * tax_rate
+            / 100
         )
 
         grand_total = money(
             taxable + final_tax
         )
-
-        # KEEP EXISTING PAYMENTS
 
         payments = invoice.get(
             "payments",
@@ -940,11 +2095,10 @@ def edit_invoice(invoice_id):
         remaining_amount = money(
             max(
                 0,
-                grand_total - paid_amount
+                grand_total
+                - paid_amount
             )
         )
-
-        # STATUS
 
         if (
             paid_amount >= grand_total
@@ -955,21 +2109,19 @@ def edit_invoice(invoice_id):
 
         elif paid_amount > 0:
 
-            payment_status = "Partially Paid"
+            payment_status = (
+                "Partially Paid"
+            )
 
         else:
 
             payment_status = "Pending"
 
-        # UPDATE DATABASE
-
         mongo.db.invoices.update_one(
-
             {
                 "_id":
                     ObjectId(invoice_id)
             },
-
             {
                 "$set": {
 
@@ -1051,9 +2203,19 @@ def edit_invoice(invoice_id):
             )
         )
 
+    products = list(
+        mongo.db.products
+        .find()
+        .sort(
+            "name",
+            1
+        )
+    )
+
     return render_template(
         "edit_invoice.html",
-        invoice=invoice
+        invoice=invoice,
+        products=products
     )
 
 
@@ -1067,10 +2229,8 @@ def edit_invoice(invoice_id):
 def invoice_view(invoice_id):
 
     invoice = mongo.db.invoices.find_one({
-
         "_id":
             ObjectId(invoice_id)
-
     })
 
     if not invoice:
@@ -1095,12 +2255,10 @@ def invoice_view(invoice_id):
     )
 
     mongo.db.invoices.update_one(
-
         {
             "_id":
                 ObjectId(invoice_id)
         },
-
         {
             "$set": {
 
@@ -1126,11 +2284,8 @@ def invoice_view(invoice_id):
     )
 
     return render_template(
-
         "invoice.html",
-
         invoice=invoice,
-
         now_date=now_date
     )
 
@@ -1146,10 +2301,8 @@ def invoice_view(invoice_id):
 def add_payment(invoice_id):
 
     invoice = mongo.db.invoices.find_one({
-
         "_id":
             ObjectId(invoice_id)
-
     })
 
     if not invoice:
@@ -1177,7 +2330,8 @@ def add_payment(invoice_id):
     remaining = money(
         max(
             0,
-            grand_total - already_paid
+            grand_total
+            - already_paid
         )
     )
 
@@ -1234,12 +2388,15 @@ def add_payment(invoice_id):
     )
 
     new_remaining = money(
-        remaining - payment_amount
+        remaining
+        - payment_amount
     )
 
     if new_remaining <= 0:
 
-        payment_type = "Final Payment"
+        payment_type = (
+            "Final Payment"
+        )
 
     payment = {
 
@@ -1266,15 +2423,12 @@ def add_payment(invoice_id):
     }
 
     mongo.db.invoices.update_one(
-
         {
             "_id":
                 ObjectId(invoice_id)
         },
-
         {
             "$push": {
-
                 "payments":
                     payment
             }
@@ -1299,7 +2453,7 @@ def add_payment(invoice_id):
 
 
 # =========================================================
-# PAYMENT PDF
+# PAYMENT PDF / RECEIPT
 # =========================================================
 
 @app.route(
@@ -1311,14 +2465,16 @@ def payment_pdf(
 ):
 
     invoice = mongo.db.invoices.find_one({
-
         "_id":
             ObjectId(invoice_id)
-
     })
 
     if not invoice:
-        return "Invoice not found", 404
+
+        return (
+            "Invoice not found",
+            404
+        )
 
     payment = None
 
@@ -1333,7 +2489,11 @@ def payment_pdf(
             break
 
     if not payment:
-        return "Payment not found", 404
+
+        return (
+            "Payment not found",
+            404
+        )
 
     buffer = io.BytesIO()
 
@@ -1345,10 +2505,6 @@ def payment_pdf(
     width, height = A4
 
     left = 20 * mm
-
-    # =====================================================
-    # HEADER
-    # =====================================================
 
     c.setFillColor(
         colors.HexColor(
@@ -1365,24 +2521,34 @@ def payment_pdf(
         stroke=0
     )
 
+    logo_drawn = draw_logo(
+        c,
+        left,
+        height - 39 * mm,
+        30 * mm,
+        30 * mm
+    )
+
     c.setFillColor(
         colors.white
     )
 
-    # COMPANY NAME
-
     c.setFont(
         "Helvetica-Bold",
-        24
+        20
+    )
+
+    company_x = (
+        left + 35 * mm
+        if logo_drawn
+        else left
     )
 
     c.drawString(
-        left,
+        company_x,
         height - 16 * mm,
         COMPANY_NAME
     )
-
-    # TAGLINE
 
     c.setFont(
         "Helvetica-Bold",
@@ -1390,12 +2556,10 @@ def payment_pdf(
     )
 
     c.drawString(
-        left,
+        company_x,
         height - 23 * mm,
         COMPANY_TAGLINE
     )
-
-    # TITLE
 
     c.setFont(
         "Helvetica-Bold",
@@ -1403,12 +2567,10 @@ def payment_pdf(
     )
 
     c.drawString(
-        left,
+        company_x,
         height - 34 * mm,
         "PAYMENT RECEIPT"
     )
-
-    # INVOICE NUMBER
 
     c.setFont(
         "Helvetica",
@@ -1425,10 +2587,6 @@ def payment_pdf(
     )
 
     y = height - 60 * mm
-
-    # =====================================================
-    # PAYMENT DETAILS
-    # =====================================================
 
     c.setFillColor(
         colors.black
@@ -1511,10 +2669,6 @@ def payment_pdf(
 
         y -= 7 * mm
 
-    # =====================================================
-    # PAYMENT SUMMARY
-    # =====================================================
-
     y -= 5 * mm
 
     c.setFillColor(
@@ -1594,18 +2748,26 @@ def payment_pdf(
         f"Rs. {money(payment.get('remaining', 0)):.2f}"
     )
 
-    # =====================================================
-    # FOOTER
-    # =====================================================
+    draw_logo(
+        c,
+        (width / 2) - 12 * mm,
+        24 * mm,
+        24 * mm,
+        18 * mm
+    )
+
+    c.setFillColor(
+        colors.black
+    )
 
     c.setFont(
         "Helvetica-Bold",
-        10
+        9
     )
 
     c.drawCentredString(
         width / 2,
-        25 * mm,
+        20 * mm,
         COMPANY_NAME
     )
 
@@ -1616,7 +2778,7 @@ def payment_pdf(
 
     c.drawCentredString(
         width / 2,
-        18 * mm,
+        14 * mm,
         COMPANY_TAGLINE
     )
 
@@ -1627,7 +2789,7 @@ def payment_pdf(
 
     c.drawCentredString(
         width / 2,
-        12 * mm,
+        8 * mm,
         "Thank you for your payment!"
     )
 
@@ -1644,19 +2806,38 @@ def payment_pdf(
     )
 
     return send_file(
-
         buffer,
-
         as_attachment=True,
-
         download_name=(
-
             f"{invoice['invoice_number']}_"
             f"{safe_type}_"
             f"{payment_id[:8]}.pdf"
         ),
-
         mimetype="application/pdf"
+    )
+
+
+# =========================================================
+# DELETE INVOICE
+# =========================================================
+
+@app.route(
+    "/invoice/delete/<invoice_id>"
+)
+def delete_invoice(invoice_id):
+
+    mongo.db.invoices.delete_one({
+        "_id":
+            ObjectId(invoice_id)
+    })
+
+    flash(
+        "Invoice deleted.",
+        "success"
+    )
+
+    return redirect(
+        url_for("invoices")
     )
 
 
@@ -1670,15 +2851,16 @@ def payment_pdf(
 def invoice_pdf(invoice_id):
 
     inv = mongo.db.invoices.find_one({
-
         "_id":
             ObjectId(invoice_id)
-
     })
 
     if not inv:
 
-        return "Invoice not found", 404
+        return (
+            "Invoice not found",
+            404
+        )
 
     buffer = io.BytesIO()
 
@@ -1693,9 +2875,7 @@ def invoice_pdf(invoice_id):
 
     y = height - 22 * mm
 
-    # =====================================================
     # HEADER
-    # =====================================================
 
     c.setFillColor(
         colors.HexColor(
@@ -1712,24 +2892,34 @@ def invoice_pdf(invoice_id):
         stroke=0
     )
 
+    logo_drawn = draw_logo(
+        c,
+        left,
+        height - 39 * mm,
+        30 * mm,
+        30 * mm
+    )
+
     c.setFillColor(
         colors.white
     )
-
-    # COMPANY NAME
 
     c.setFont(
         "Helvetica-Bold",
         22
     )
 
+    company_x = (
+        left + 35 * mm
+        if logo_drawn
+        else left
+    )
+
     c.drawString(
-        left,
+        company_x,
         height - 16 * mm,
         COMPANY_NAME
     )
-
-    # TAGLINE
 
     c.setFont(
         "Helvetica-Bold",
@@ -1737,12 +2927,10 @@ def invoice_pdf(invoice_id):
     )
 
     c.drawString(
-        left,
+        company_x,
         height - 23 * mm,
         COMPANY_TAGLINE
     )
-
-    # INVOICE TITLE
 
     c.setFont(
         "Helvetica-Bold",
@@ -1750,12 +2938,10 @@ def invoice_pdf(invoice_id):
     )
 
     c.drawString(
-        left,
+        company_x,
         height - 34 * mm,
         "INVOICE"
     )
-
-    # INVOICE NUMBER
 
     c.setFont(
         "Helvetica",
@@ -1771,8 +2957,6 @@ def invoice_pdf(invoice_id):
         )
     )
 
-    # DATE
-
     c.drawRightString(
         width - left,
         height - 23 * mm,
@@ -1784,9 +2968,7 @@ def invoice_pdf(invoice_id):
 
     y = height - 58 * mm
 
-    # =====================================================
     # BILL TO
-    # =====================================================
 
     c.setFillColor(
         colors.black
@@ -1855,9 +3037,7 @@ def invoice_pdf(invoice_id):
 
             y -= 5 * mm
 
-    # =====================================================
     # ITEMS TABLE
-    # =====================================================
 
     y -= 5 * mm
 
@@ -1957,9 +3137,7 @@ def invoice_pdf(invoice_id):
 
         y -= 6 * mm
 
-    # =====================================================
     # TOTALS
-    # =====================================================
 
     y -= 4 * mm
 
@@ -2018,11 +3196,9 @@ def invoice_pdf(invoice_id):
         y -= 6 * mm
 
         c.setFont(
-
             "Helvetica-Bold"
             if label == "Grand Total"
             else "Helvetica",
-
             10
         )
 
@@ -2038,9 +3214,7 @@ def invoice_pdf(invoice_id):
             f"Rs. {value:.2f}"
         )
 
-    # =====================================================
     # PAYMENT SUMMARY
-    # =====================================================
 
     y -= 12 * mm
 
@@ -2049,16 +3223,13 @@ def invoice_pdf(invoice_id):
     )
 
     remaining_amount = max(
-
         0,
-
         money(
             inv.get(
                 "grand_total",
                 0
             )
         ) - paid_amount
-
     )
 
     c.setFont(
@@ -2113,9 +3284,7 @@ def invoice_pdf(invoice_id):
         f"{inv.get('payment_status', 'Pending')}"
     )
 
-    # =====================================================
     # PAYMENT HISTORY
-    # =====================================================
 
     if inv.get("payments"):
 
@@ -2140,26 +3309,19 @@ def invoice_pdf(invoice_id):
         )
 
         for index, payment in enumerate(
-
             inv.get(
                 "payments",
                 []
             ),
-
             start=1
         ):
 
             text = (
-
                 f"{index}. "
-
                 f"{payment.get('date', '')} | "
-
                 f"{payment.get('type', '')} | "
-
                 f"Rs. "
                 f"{money(payment.get('amount', 0)):.2f} | "
-
                 f"Remaining: Rs. "
                 f"{money(payment.get('remaining', 0)):.2f}"
             )
@@ -2172,9 +3334,7 @@ def invoice_pdf(invoice_id):
 
             y -= 5 * mm
 
-    # =====================================================
     # NOTES
-    # =====================================================
 
     if inv.get("notes"):
 
@@ -2204,9 +3364,21 @@ def invoice_pdf(invoice_id):
             )[:100]
         )
 
-    # =====================================================
+    # FOOTER LOGO
+
+    draw_logo(
+        c,
+        (width / 2) - 12 * mm,
+        18 * mm,
+        24 * mm,
+        18 * mm
+    )
+
     # FOOTER
-    # =====================================================
+
+    c.setFillColor(
+        colors.black
+    )
 
     c.setFont(
         "Helvetica-Bold",
@@ -2215,7 +3387,7 @@ def invoice_pdf(invoice_id):
 
     c.drawCentredString(
         width / 2,
-        18 * mm,
+        14 * mm,
         COMPANY_NAME
     )
 
@@ -2226,7 +3398,7 @@ def invoice_pdf(invoice_id):
 
     c.drawCentredString(
         width / 2,
-        12 * mm,
+        9 * mm,
         COMPANY_TAGLINE
     )
 
@@ -2237,7 +3409,7 @@ def invoice_pdf(invoice_id):
 
     c.drawCentredString(
         width / 2,
-        7 * mm,
+        4 * mm,
         "Thank you for your business!"
     )
 
@@ -2246,25 +3418,42 @@ def invoice_pdf(invoice_id):
     buffer.seek(0)
 
     return send_file(
-
         buffer,
-
         as_attachment=True,
-
         download_name=(
-
             f"{inv['invoice_number']}.pdf"
         ),
-
         mimetype="application/pdf"
     )
 
 
 # =========================================================
-# RUN APPLICATION
+# MAIN
 # =========================================================
 
 if __name__ == "__main__":
+
+    print(
+        "Logo path:",
+        LOGO_PATH
+    )
+
+    print(
+        "Logo exists:",
+        os.path.exists(
+            LOGO_PATH
+        )
+    )
+
+    print(
+        "Seller GSTIN:",
+        SELLER_GSTIN
+    )
+
+    print(
+        "Seller State Code:",
+        SELLER_STATE_CODE
+    )
 
     app.run(
         debug=True

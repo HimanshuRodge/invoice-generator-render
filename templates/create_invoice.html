@@ -2,35 +2,74 @@
 
 <form method="post" id="invoiceForm">
 
+<datalist id="productList">
+    {% for p in products %}
+    <option value="{{ p.name }}" data-price="{{ p.price }}" data-tax="{{ p.tax }}"></option>
+    {% endfor %}
+</datalist>
+
     ```
+    <!-- =====================================================
+     PAGE HEADER / LOGIXIUS BRANDING
+====================================================== -->
+
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="fw-bold">Create Invoice</h2>
-            <p class="text-muted mb-0">Generate a professional invoice.</p>
+
+        <div class="d-flex align-items-center gap-3">
+
+            <!-- LOGIXIUS LOGO -->
+            <div class="invoice-page-logo">
+                <img src="{{ url_for('static', filename='images/logo_logixius1.png') }}" alt="Logixius Logo">
+            </div>
+
+            <div>
+                <h2 class="fw-bold mb-1">Create Invoice</h2>
+
+                <p class="text-muted mb-0">
+                    Generate a professional invoice for your customer.
+                </p>
+            </div>
+
         </div>
 
         <button type="submit" class="btn btn-primary px-4">
+        <i class="bi bi-check-circle me-1"></i>
         Save Invoice
     </button>
+
     </div>
+
+
+    <!-- =====================================================
+     INVOICE FORM
+====================================================== -->
 
     <div class="row g-4">
 
-        <!-- LEFT SIDE -->
+        <!-- =================================================
+         LEFT SIDE
+    ================================================= -->
+
         <div class="col-lg-8">
 
-            <!-- Customer Details -->
+            <!-- CUSTOMER DETAILS -->
+
             <div class="card border-0 shadow-sm mb-4">
+
                 <div class="card-body">
 
-                    <h5 class="fw-bold mb-3">Customer Details</h5>
+                    <h5 class="fw-bold mb-3">
+                        <i class="bi bi-person-vcard me-2 text-primary"></i> Customer Details
+                    </h5>
 
                     <select id="customerSelect" class="form-select mb-3">
+
                     <option value="">
                         Select existing customer or enter below
                     </option>
 
                     {% for c in customers %}
+
                     <option
                         data-name="{{ c.name }}"
                         data-phone="{{ c.phone }}"
@@ -40,38 +79,59 @@
                     >
                         {{ c.name }}
                     </option>
+
                     {% endfor %}
+
                 </select>
+
 
                     <div class="row g-3">
 
                         <div class="col-md-6">
+
                             <input name="customer_name" id="customer_name" class="form-control" placeholder="Customer name" required>
+
                         </div>
 
+
                         <div class="col-md-6">
+
                             <input name="customer_phone" id="customer_phone" class="form-control" placeholder="Phone">
+
                         </div>
 
+
                         <div class="col-md-6">
+
                             <input name="customer_email" id="customer_email" type="email" class="form-control" placeholder="Email">
+
                         </div>
 
+
                         <div class="col-md-6">
+
                             <input name="customer_gstin" id="customer_gstin" class="form-control" placeholder="GSTIN">
+
                         </div>
+
 
                         <div class="col-12">
+
                             <textarea name="customer_address" id="customer_address" class="form-control" placeholder="Address" rows="3"></textarea>
+
                         </div>
 
                     </div>
 
                 </div>
+
             </div>
 
 
-            <!-- Invoice Items -->
+            <!-- =================================================
+             INVOICE ITEMS
+        ================================================== -->
+
             <div class="card border-0 shadow-sm">
 
                 <div class="card-body">
@@ -79,11 +139,14 @@
                     <div class="d-flex justify-content-between align-items-center mb-3">
 
                         <h5 class="fw-bold mb-0">
-                            Invoice Items
+
+                            <i class="bi bi-cart-check me-2 text-primary"></i> Invoice Items
+
                         </h5>
 
                         <button type="button" class="btn btn-sm btn-outline-primary" onclick="addItem()">
-                        + Add Item
+                        <i class="bi bi-plus-lg me-1"></i>
+                        Add Item
                     </button>
 
                     </div>
@@ -94,30 +157,45 @@
                         <div class="item-row row g-2 mb-2">
 
                             <div class="col-md-5">
-                                <input name="item_name[]" class="form-control item-name" placeholder="Item name" required>
+
+                                <input name="item_name[]" class="form-control item-name" list="productList" placeholder="Item name (select product)" required>
+
                             </div>
 
+
                             <div class="col-md-2">
+
                                 <input name="item_qty[]" type="number" step="0.01" min="0" value="1" class="form-control qty" placeholder="Qty">
+
                             </div>
 
+
                             <div class="col-md-2">
+
                                 <input name="item_price[]" type="number" step="0.01" min="0" value="0" class="form-control price" placeholder="Price">
+
                             </div>
 
+
                             <div class="col-md-2">
+
                                 <input name="item_tax[]" type="number" step="0.01" min="0" value="18" class="form-control tax" placeholder="Tax %">
+
                             </div>
+
 
                             <div class="col-md-1">
+
                                 <button type="button" class="btn btn-outline-danger w-100 remove">
                                 ×
                             </button>
+
                             </div>
 
                         </div>
 
                     </div>
+
 
                     <small class="text-muted">
                     Columns: Item, Quantity, Price, Tax %
@@ -130,7 +208,10 @@
         </div>
 
 
-        <!-- RIGHT SIDE -->
+        <!-- =================================================
+         RIGHT SIDE
+    ================================================== -->
+
         <div class="col-lg-4">
 
             <div class="card border-0 shadow-sm sticky-lg-top" style="top:20px">
@@ -138,27 +219,28 @@
                 <div class="card-body">
 
                     <h5 class="fw-bold mb-3">
-                        Invoice Details
+
+                        <i class="bi bi-receipt me-2 text-primary"></i> Invoice Details
+
                     </h5>
 
 
-                    <!-- Invoice Number -->
+                    <!-- INVOICE NUMBER -->
 
                     <input name="invoice_number" value="{{ next_no }}" class="form-control mb-3" placeholder="Invoice number" required>
 
 
-                    <!-- Invoice Date -->
-                    <!-- Date is filled automatically by JavaScript -->
+                    <!-- INVOICE DATE -->
 
                     <input name="date" id="invoiceDate" type="date" class="form-control mb-3" required>
 
 
-                    <!-- Due Date -->
+                    <!-- DUE DATE -->
 
                     <input name="due_date" type="date" class="form-control mb-3">
 
 
-                    <!-- Payment Status -->
+                    <!-- PAYMENT STATUS -->
 
                     <select name="payment_status" class="form-select mb-3">
 
@@ -177,37 +259,44 @@
                 </select>
 
 
-                    <!-- Discount -->
+                    <!-- DISCOUNT -->
 
                     <input name="discount" id="discount" type="number" step="0.01" min="0" value="0" class="form-control mb-3" placeholder="Discount">
 
 
-                    <!-- Summary -->
+                    <!-- SUMMARY -->
 
                     <div class="summary">
 
                         <div>
                             <span>Subtotal</span>
+
                             <strong id="subtotal">
                             ₹0.00
                         </strong>
                         </div>
 
+
                         <div>
                             <span>Discount</span>
+
                             <strong id="discountShow">
                             ₹0.00
                         </strong>
                         </div>
 
+
                         <div>
                             <span>Tax</span>
+
                             <strong id="tax">
                             ₹0.00
                         </strong>
                         </div>
 
+
                         <hr>
+
 
                         <div class="grand">
 
@@ -224,7 +313,7 @@
                     </div>
 
 
-                    <!-- Notes -->
+                    <!-- NOTES -->
 
                     <textarea name="notes" class="form-control mt-3" placeholder="Notes" rows="3"></textarea>
 
@@ -239,6 +328,39 @@
 
 </form>
 
+<!-- =====================================================
+     LOGIXIUS LOGO STYLE
+===================================================== -->
+
+<style>
+    .invoice-page-logo {
+        width: 58px;
+        height: 58px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        overflow: hidden;
+        background: transparent;
+        border: none;
+        box-shadow: none;
+    }
+    
+    .invoice-page-logo img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        display: block;
+    }
+    
+    @media (max-width: 576px) {
+        .invoice-page-logo {
+            width: 48px;
+            height: 48px;
+        }
+    }
+</style>
+
 {% endblock %} {% block scripts %}
 
 <script>
@@ -248,19 +370,26 @@
 
     document.addEventListener("DOMContentLoaded", function() {
 
-        const dateInput = document.getElementById("invoiceDate");
+        const dateInput =
+            document.getElementById("invoiceDate");
 
         if (dateInput) {
 
             const today = new Date();
 
-            const year = today.getFullYear();
+            const year =
+                today.getFullYear();
 
-            const month = String(today.getMonth() + 1).padStart(2, "0");
+            const month =
+                String(today.getMonth() + 1)
+                .padStart(2, "0");
 
-            const day = String(today.getDate()).padStart(2, "0");
+            const day =
+                String(today.getDate())
+                .padStart(2, "0");
 
-            dateInput.value = `${year}-${month}-${day}`;
+            dateInput.value =
+                `${year}-${month}-${day}`;
 
         }
 
@@ -273,38 +402,91 @@
 
     function addItem() {
 
-        const firstRow = document.querySelector(".item-row");
+        const firstRow =
+            document.querySelector(".item-row");
 
-        const newRow = firstRow.cloneNode(true);
+        const newRow =
+            firstRow.cloneNode(true);
 
-        newRow.querySelectorAll("input").forEach(function(input) {
 
-            if (input.classList.contains("qty")) {
+        newRow.querySelectorAll("input")
+            .forEach(function(input) {
 
-                input.value = 1;
+                if (input.classList.contains("qty")) {
 
-            } else if (input.classList.contains("tax")) {
+                    input.value = 1;
 
-                input.value = 18;
+                } else if (input.classList.contains("tax")) {
 
-            } else if (input.classList.contains("price")) {
+                    input.value = 18;
 
-                input.value = 0;
+                } else if (input.classList.contains("price")) {
 
-            } else {
+                    input.value = 0;
 
-                input.value = "";
+                } else {
 
-            }
+                    input.value = "";
 
-        });
+                }
 
-        document.getElementById("items").appendChild(newRow);
+            });
+
+
+        document
+            .getElementById("items")
+            .appendChild(newRow);
+
 
         bindEvents();
 
         calculateInvoice();
 
+    }
+
+
+    /* =========================================
+       AUTO-FILL PRODUCT DETAILS
+       Selecting/typing a saved product name
+       fills its saved price and tax rate.
+    ========================================= */
+
+    function fillProductDetails(input) {
+
+        const enteredName = (input.value || "").trim().toLowerCase();
+
+        if (!enteredName) {
+            return;
+        }
+
+        const option = Array.from(
+            document.querySelectorAll("#productList option")
+        ).find(function(item) {
+            return (item.value || "").trim().toLowerCase() === enteredName;
+        });
+
+        if (!option) {
+            return;
+        }
+
+        const row = input.closest(".item-row");
+
+        if (!row) {
+            return;
+        }
+
+        const priceInput = row.querySelector(".price");
+        const taxInput = row.querySelector(".tax");
+
+        if (priceInput && option.dataset.price !== undefined) {
+            priceInput.value = option.dataset.price;
+        }
+
+        if (taxInput && option.dataset.tax !== undefined) {
+            taxInput.value = option.dataset.tax;
+        }
+
+        calculateInvoice();
     }
 
 
@@ -315,10 +497,41 @@
     function bindEvents() {
 
         document
+            .querySelectorAll(".item-name")
+            .forEach(function(input) {
+
+                input.onchange = function() {
+                    fillProductDetails(input);
+                };
+
+                input.oninput = function() {
+                    const enteredName = (input.value || "").trim().toLowerCase();
+
+                    const option = Array.from(
+                        document.querySelectorAll("#productList option")
+                    ).find(function(item) {
+                        return (item.value || "").trim().toLowerCase() === enteredName;
+                    });
+
+                    if (option) {
+                        fillProductDetails(input);
+                    }
+                };
+            });
+
+
+        document
             .querySelectorAll(".item-row input")
             .forEach(function(input) {
 
-                input.oninput = calculateInvoice;
+                if (input.classList.contains("item-name")) {
+                    input.oninput = function() {
+                        fillProductDetails(input);
+                        calculateInvoice();
+                    };
+                } else {
+                    input.oninput = calculateInvoice;
+                }
 
             });
 
@@ -327,22 +540,27 @@
             .querySelectorAll(".remove")
             .forEach(function(button) {
 
-                button.onclick = function() {
+                button.onclick =
+                    function() {
 
-                    const rows =
-                        document.querySelectorAll(".item-row");
+                        const rows =
+                            document.querySelectorAll(
+                                ".item-row"
+                            );
 
-                    if (rows.length > 1) {
 
-                        button
-                            .closest(".item-row")
-                            .remove();
+                        if (rows.length > 1) {
 
-                        calculateInvoice();
+                            button
+                                .closest(".item-row")
+                                .remove();
 
-                    }
 
-                };
+                            calculateInvoice();
+
+                        }
+
+                    };
 
             });
 
@@ -399,7 +617,9 @@
 
         const discount =
             parseFloat(
-                document.getElementById("discount").value
+                document
+                .getElementById("discount")
+                .value
             ) || 0;
 
 
@@ -428,19 +648,27 @@
             taxableAmount + finalTax;
 
 
-        document.getElementById("subtotal").textContent =
+        document
+            .getElementById("subtotal")
+            .textContent =
             "₹" + subtotal.toFixed(2);
 
 
-        document.getElementById("discountShow").textContent =
+        document
+            .getElementById("discountShow")
+            .textContent =
             "₹" + discount.toFixed(2);
 
 
-        document.getElementById("tax").textContent =
+        document
+            .getElementById("tax")
+            .textContent =
             "₹" + finalTax.toFixed(2);
 
 
-        document.getElementById("grand").textContent =
+        document
+            .getElementById("grand")
+            .textContent =
             "₹" + grandTotal.toFixed(2);
 
     }
@@ -452,40 +680,66 @@
 
     document
         .getElementById("customerSelect")
-        .addEventListener("change", function() {
+        .addEventListener(
+            "change",
+            function() {
 
-            const selected =
-                this.options[this.selectedIndex];
+                const selected =
+                    this.options[
+                        this.selectedIndex
+                    ];
 
 
-            if (!selected.value &&
-                !selected.dataset.name) {
+                if (!selected.value &&
+                    !selected.dataset.name
+                ) {
 
-                return;
+                    return;
+
+                }
+
+
+                document
+                    .getElementById(
+                        "customer_name"
+                    )
+                    .value =
+                    selected.dataset.name || "";
+
+
+                document
+                    .getElementById(
+                        "customer_phone"
+                    )
+                    .value =
+                    selected.dataset.phone || "";
+
+
+                document
+                    .getElementById(
+                        "customer_email"
+                    )
+                    .value =
+                    selected.dataset.email || "";
+
+
+                document
+                    .getElementById(
+                        "customer_address"
+                    )
+                    .value =
+                    selected.dataset.address || "";
+
+
+                document
+                    .getElementById(
+                        "customer_gstin"
+                    )
+                    .value =
+                    selected.dataset.gstin || "";
 
             }
-
-
-            document.getElementById("customer_name").value =
-                selected.dataset.name || "";
-
-
-            document.getElementById("customer_phone").value =
-                selected.dataset.phone || "";
-
-
-            document.getElementById("customer_email").value =
-                selected.dataset.email || "";
-
-
-            document.getElementById("customer_address").value =
-                selected.dataset.address || "";
-
-
-            document.getElementById("customer_gstin").value =
-                selected.dataset.gstin || "";
-
-        });
+        );
 
 
     /* =========================================

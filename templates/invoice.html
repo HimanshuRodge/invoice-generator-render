@@ -1,31 +1,58 @@
 {% extends "base.html" %} {% block content %}
 
-<div class="container-fluid py-4">
+<div class="container-fluid py-4 invoice-view-page">
 
-    <!-- HEADER -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    ```
+    <!-- =====================================================
+     PAGE HEADER
+===================================================== -->
 
-        <div>
-            <h2 class="fw-bold mb-1">
-                <i class="bi bi-receipt-cutoff"></i> Invoice
-            </h2>
+    <div class="invoice-page-header mb-4">
 
-            <div class="text-muted">
-                {{ invoice["invoice_number"] }}
+        <div class="invoice-heading">
+
+            <div class="invoice-heading-logo">
+
+                <img src="{{ url_for('static', filename='images/logo_logixius1.png') }}" alt="Logixius">
+
             </div>
+
+            <div>
+
+                <span class="invoice-section-label">
+                LOGIXIUS BUSINESS MANAGEMENT
+            </span>
+
+                <h2 class="fw-bold mb-1">
+                    Invoice
+                </h2>
+
+                <div class="text-muted">
+                    {{ invoice["invoice_number"] }}
+                </div>
+
+            </div>
+
         </div>
+
 
         <div class="d-flex gap-2 flex-wrap">
 
-            <a href="{{ url_for('edit_invoice', invoice_id=invoice['_id']) }}" class="btn btn-warning">
+            <a href="{{ url_for('edit_invoice', invoice_id=invoice['_id']) }}" class="btn btn-warning invoice-action-btn">
                 <i class="bi bi-pencil-square"></i> Edit Invoice
             </a>
 
-            <a href="{{ url_for('invoice_pdf', invoice_id=invoice['_id']) }}" class="btn btn-primary">
+
+            <a href="{{ url_for('invoice_pdf', invoice_id=invoice['_id']) }}" class="btn btn-primary invoice-action-btn">
                 <i class="bi bi-download"></i> Download Invoice
             </a>
 
-            <a href="{{ url_for('invoices') }}" class="btn btn-outline-secondary">
+            <a href="{{ url_for('invoice_gst_json', invoice_id=invoice['_id']) }}" class="btn btn-outline-success invoice-action-btn">
+                <i class="bi bi-filetype-json"></i> GST JSON
+            </a>
+
+
+            <a href="{{ url_for('invoices') }}" class="btn btn-outline-secondary invoice-action-btn">
                 <i class="bi bi-arrow-left"></i> Back
             </a>
 
@@ -34,54 +61,89 @@
     </div>
 
 
-    <!-- INVOICE CARD -->
-    <div class="card border-0 shadow-lg">
+    <!-- =====================================================
+     MAIN INVOICE
+===================================================== -->
 
-        <!-- BRAND HEADER -->
-        <div class="p-4 text-white" style="
-                background: linear-gradient(135deg, #172554, #2563eb);
-                border-radius: 12px 12px 0 0;
-             ">
+    <div class="invoice-main-card">
+
+
+        <!-- =================================================
+         BRAND HEADER
+    ================================================= -->
+
+        <div class="invoice-brand-header">
 
             <div class="row align-items-center">
 
                 <div class="col-md-7">
 
-                    <h1 class="fw-bold mb-0">
-                        LOGIXIUS
-                    </h1>
+                    <div class="invoice-brand">
 
-                    <div class="fw-bold small mt-1">
-                        Transforming Ideas into Intelligent Solutions
+                        <div class="invoice-logo">
+
+                            <img src="{{ url_for('static', filename='images/logo_logixius1.png') }}" alt="Logixius Logo">
+
+                        </div>
+
+
+                        <div>
+
+                            <div class="invoice-brand-name">
+                                LOGIXIUS
+                            </div>
+
+                            <div class="invoice-brand-tagline">
+                                Transforming Ideas into Intelligent Solutions
+                            </div>
+
+                        </div>
+
                     </div>
 
-                    <div class="mt-3">
-                        <span class="badge bg-light text-dark px-3 py-2">
-                            INVOICE
-                        </span>
+
+                    <div class="mt-4">
+
+                        <span class="invoice-label-badge">
+                        INVOICE
+                    </span>
+
                     </div>
 
                 </div>
 
-                <div class="col-md-5 text-md-end mt-3 mt-md-0">
 
-                    <div class="small opacity-75">
+                <div class="col-md-5 text-md-end mt-4 mt-md-0">
+
+                    <div class="invoice-meta-label">
                         Invoice Number
                     </div>
 
-                    <h4 class="fw-bold">
+                    <div class="invoice-number-large">
                         {{ invoice["invoice_number"] }}
-                    </h4>
-
-                    <div class="small">
-                        Invoice Date: {{ invoice.get("date", "") }}
                     </div>
 
-                    {% if invoice.get("due_date") %}
-                    <div class="small">
-                        Due Date: {{ invoice["due_date"] }}
+                    <div class="invoice-meta">
+
+                        <div>
+                            Invoice Date:
+                            <strong>
+                            {{ invoice.get("date", "") }}
+                        </strong>
+                        </div>
+
+                        {% if invoice.get("due_date") %}
+
+                        <div>
+                            Due Date:
+                            <strong>
+                            {{ invoice["due_date"] }}
+                        </strong>
+                        </div>
+
+                        {% endif %}
+
                     </div>
-                    {% endif %}
 
                 </div>
 
@@ -90,90 +152,134 @@
         </div>
 
 
-        <div class="card-body p-4">
+        <!-- =================================================
+         INVOICE BODY
+    ================================================= -->
+
+        <div class="invoice-body">
 
 
-            <!-- CUSTOMER -->
-            <div class="row mb-4">
+            <!-- CUSTOMER + PAYMENT STATUS -->
+
+            <div class="row mb-5">
 
                 <div class="col-md-6">
 
-                    <div class="text-primary fw-bold mb-2">
+                    <div class="invoice-content-label">
                         BILL TO
                     </div>
 
-                    <h5 class="fw-bold mb-1">
+                    <h5 class="fw-bold mb-2">
                         {{ invoice["customer"].get("name", "") }}
                     </h5>
 
+
                     {% if invoice["customer"].get("address") %}
-                    <div>
-                        {{ invoice["customer"]["address"] }}
+
+                    <div class="customer-detail">
+                        <i class="bi bi-geo-alt"></i> {{ invoice["customer"]["address"] }}
                     </div>
+
                     {% endif %} {% if invoice["customer"].get("phone") %}
-                    <div>
+
+                    <div class="customer-detail">
                         <i class="bi bi-telephone"></i> {{ invoice["customer"]["phone"] }}
                     </div>
+
                     {% endif %} {% if invoice["customer"].get("email") %}
-                    <div>
+
+                    <div class="customer-detail">
                         <i class="bi bi-envelope"></i> {{ invoice["customer"]["email"] }}
                     </div>
+
                     {% endif %} {% if invoice["customer"].get("gstin") %}
-                    <div>
-                        <strong>GSTIN:</strong> {{ invoice["customer"]["gstin"] }}
+
+                    <div class="customer-detail">
+
+                        <strong>
+                        GSTIN:
+                    </strong> {{ invoice["customer"]["gstin"] }}
+
                     </div>
+
                     {% endif %}
 
                 </div>
 
 
-                <div class="col-md-6 text-md-end">
+                <div class="col-md-6 text-md-end mt-4 mt-md-0">
 
-                    <div class="text-primary fw-bold mb-2">
+                    <div class="invoice-content-label">
                         PAYMENT STATUS
                     </div>
 
+
                     {% if invoice.get("payment_status") == "Paid" %}
 
-                    <span class="badge bg-success fs-6 px-3 py-2">
-                            <i class="bi bi-check-circle"></i>
-                            Paid
-                        </span> {% elif invoice.get("payment_status") == "Partially Paid" %}
+                    <span class="invoice-status status-paid">
 
-                    <span class="badge bg-warning text-dark fs-6 px-3 py-2">
-                            <i class="bi bi-hourglass-split"></i>
-                            Partially Paid
-                        </span> {% else %}
+                    <i class="bi bi-check-circle-fill"></i>
+                    Paid
 
-                    <span class="badge bg-danger fs-6 px-3 py-2">
-                            <i class="bi bi-clock"></i>
-                            Pending
-                        </span> {% endif %}
+                </span> {% elif invoice.get("payment_status") == "Partially Paid" %}
+
+                    <span class="invoice-status status-partial">
+
+                    <i class="bi bi-hourglass-split"></i>
+                    Partially Paid
+
+                </span> {% else %}
+
+                    <span class="invoice-status status-pending">
+
+                    <i class="bi bi-clock-fill"></i>
+                    Pending
+
+                </span> {% endif %}
 
                 </div>
 
             </div>
 
 
-            <!-- ITEMS TABLE -->
+            <!-- =================================================
+             ITEMS TABLE
+        ================================================= -->
+
             <div class="table-responsive">
 
-                <table class="table table-bordered align-middle">
+                <table class="table invoice-items-table align-middle">
 
-                    <thead class="table-dark">
+                    <thead>
 
                         <tr>
 
                             <th>#</th>
-                            <th>Item</th>
-                            <th class="text-end">Qty</th>
-                            <th class="text-end">Price</th>
-                            <th class="text-end">Tax</th>
-                            <th class="text-end">Amount</th>
+
+                            <th>
+                                Item
+                            </th>
+
+                            <th class="text-end">
+                                Qty
+                            </th>
+
+                            <th class="text-end">
+                                Price
+                            </th>
+
+                            <th class="text-end">
+                                Tax
+                            </th>
+
+                            <th class="text-end">
+                                Amount
+                            </th>
 
                         </tr>
 
                     </thead>
+
 
                     <tbody>
 
@@ -201,11 +307,12 @@
                                 {{ item.get("tax", 0) }}%
                             </td>
 
-                            <td class="text-end fw-semibold">
+                            <td class="text-end fw-bold">
                                 ₹{{ "%.2f"|format(item.get("amount", 0)|float) }}
                             </td>
 
                         </tr>
+
 
                         {% else %}
 
@@ -213,7 +320,7 @@
 
                             <td colspan="6" class="text-center text-muted py-4">
 
-                                No invoice items found.
+                                <i class="bi bi-inbox fs-3 d-block mb-2"></i> No invoice items found.
 
                             </td>
 
@@ -228,45 +335,67 @@
             </div>
 
 
-            <!-- TOTALS -->
-            <div class="row justify-content-end">
+            <!-- =================================================
+             TOTALS
+        ================================================= -->
 
-                <div class="col-md-5">
+            <div class="row justify-content-end mt-4">
 
-                    <div class="border rounded p-3 bg-light">
+                <div class="col-md-5 col-lg-4">
 
-                        <div class="d-flex justify-content-between mb-2">
-                            <span>Subtotal</span>
+                    <div class="invoice-total-box">
+
+                        <div class="total-row">
+
+                            <span>
+                            Subtotal
+                        </span>
+
                             <strong>
-                                ₹{{ "%.2f"|format(invoice.get("subtotal", 0)|float) }}
-                            </strong>
+                            ₹{{ "%.2f"|format(invoice.get("subtotal", 0)|float) }}
+                        </strong>
+
                         </div>
 
-                        <div class="d-flex justify-content-between mb-2">
-                            <span>Discount</span>
+
+                        <div class="total-row">
+
+                            <span>
+                            Discount
+                        </span>
+
                             <strong>
-                                ₹{{ "%.2f"|format(invoice.get("discount", 0)|float) }}
-                            </strong>
+                            ₹{{ "%.2f"|format(invoice.get("discount", 0)|float) }}
+                        </strong>
+
                         </div>
 
-                        <div class="d-flex justify-content-between mb-2">
-                            <span>Tax</span>
+
+                        <div class="total-row">
+
+                            <span>
+                            Tax
+                        </span>
+
                             <strong>
-                                ₹{{ "%.2f"|format(invoice.get("tax", 0)|float) }}
-                            </strong>
+                            ₹{{ "%.2f"|format(invoice.get("tax", 0)|float) }}
+                        </strong>
+
                         </div>
 
-                        <hr>
 
-                        <div class="d-flex justify-content-between">
+                        <div class="total-divider"></div>
 
-                            <span class="fw-bold fs-5">
-                                Grand Total
-                            </span>
 
-                            <strong class="fs-5 text-primary">
-                                ₹{{ "%.2f"|format(invoice.get("grand_total", 0)|float) }}
-                            </strong>
+                        <div class="grand-total-row">
+
+                            <span>
+                            Grand Total
+                        </span>
+
+                            <strong>
+                            ₹{{ "%.2f"|format(invoice.get("grand_total", 0)|float) }}
+                        </strong>
 
                         </div>
 
@@ -277,26 +406,40 @@
             </div>
 
 
-            <!-- PAYMENT SUMMARY -->
-            <div class="mt-4">
+            <!-- =================================================
+             PAYMENT SUMMARY
+        ================================================= -->
 
-                <h5 class="fw-bold mb-3">
-                    <i class="bi bi-wallet2"></i> Payment Summary
-                </h5>
+            <div class="payment-summary-section mt-5">
+
+                <div class="invoice-content-label mb-3">
+
+                    <i class="bi bi-wallet2"></i> PAYMENT SUMMARY
+
+                </div>
+
 
                 <div class="row g-3">
 
+                    <!-- TOTAL -->
+
                     <div class="col-md-4">
 
-                        <div class="card border-0 shadow-sm h-100">
+                        <div class="payment-summary-card">
 
-                            <div class="card-body">
+                            <div class="payment-summary-icon total-icon">
 
-                                <div class="text-muted">
-                                    Invoice Total
-                                </div>
+                                <i class="bi bi-receipt"></i>
 
-                                <h4 class="fw-bold">
+                            </div>
+
+                            <div>
+
+                                <span>
+                                Invoice Total
+                            </span>
+
+                                <h4>
                                     ₹{{ "%.2f"|format(invoice.get("grand_total", 0)|float) }}
                                 </h4>
 
@@ -307,17 +450,25 @@
                     </div>
 
 
+                    <!-- PAID -->
+
                     <div class="col-md-4">
 
-                        <div class="card border-0 shadow-sm h-100">
+                        <div class="payment-summary-card">
 
-                            <div class="card-body">
+                            <div class="payment-summary-icon paid-icon">
 
-                                <div class="text-muted">
-                                    Paid Amount
-                                </div>
+                                <i class="bi bi-check-circle"></i>
 
-                                <h4 class="fw-bold text-success">
+                            </div>
+
+                            <div>
+
+                                <span>
+                                Paid Amount
+                            </span>
+
+                                <h4 class="text-success">
                                     ₹{{ "%.2f"|format(invoice.get("paid_amount", 0)|float) }}
                                 </h4>
 
@@ -328,17 +479,25 @@
                     </div>
 
 
+                    <!-- REMAINING -->
+
                     <div class="col-md-4">
 
-                        <div class="card border-0 shadow-sm h-100">
+                        <div class="payment-summary-card">
 
-                            <div class="card-body">
+                            <div class="payment-summary-icon remaining-icon">
 
-                                <div class="text-muted">
-                                    Remaining Amount
-                                </div>
+                                <i class="bi bi-hourglass-split"></i>
 
-                                <h4 class="fw-bold text-danger">
+                            </div>
+
+                            <div>
+
+                                <span>
+                                Remaining Amount
+                            </span>
+
+                                <h4 class="text-danger">
                                     ₹{{ "%.2f"|format(invoice.get("remaining_amount", 0)|float) }}
                                 </h4>
 
@@ -353,18 +512,30 @@
             </div>
 
 
-            <!-- ADD PAYMENT -->
+            <!-- =================================================
+             ADD PAYMENT
+        ================================================= -->
+
             {% if invoice.get("remaining_amount", 0)|float > 0 %}
 
-            <div class="card border-0 shadow-sm mt-4">
+            <div class="add-payment-card mt-5">
 
-                <div class="card-header text-white fw-bold" style="background: linear-gradient(135deg,#2563eb,#172554);">
+                <div class="add-payment-header">
 
-                    <i class="bi bi-credit-card"></i> Add Payment
+                    <div>
+
+                        <i class="bi bi-credit-card"></i> Add Payment
+
+                    </div>
+
+                    <span>
+                    Payment Entry
+                </span>
 
                 </div>
 
-                <div class="card-body">
+
+                <div class="p-4">
 
                     <form method="POST" action="{{ url_for('add_payment', invoice_id=invoice['_id']) }}">
 
@@ -373,15 +544,17 @@
                             <div class="col-md-3">
 
                                 <label class="form-label fw-semibold">
-                                    Payment Amount
-                                </label>
+                                Payment Amount
+                            </label>
 
                                 <input type="number" name="amount" class="form-control" step="0.01" min="0.01" max="{{ invoice.get('remaining_amount', 0) }}" placeholder="Enter amount" required>
 
                                 <small class="text-muted">
-                                    Maximum:
-                                    ₹{{ "%.2f"|format(invoice.get("remaining_amount", 0)|float) }}
-                                </small>
+
+                                Maximum:
+                                ₹{{ "%.2f"|format(invoice.get("remaining_amount", 0)|float) }}
+
+                            </small>
 
                             </div>
 
@@ -389,24 +562,24 @@
                             <div class="col-md-3">
 
                                 <label class="form-label fw-semibold">
-                                    Payment Type
-                                </label>
+                                Payment Type
+                            </label>
 
                                 <select name="payment_type" class="form-select">
 
-                                    <option value="Advance">
-                                        Advance Payment
-                                    </option>
+                                <option value="Advance">
+                                    Advance Payment
+                                </option>
 
-                                    <option value="Partial Payment">
-                                        Partial Payment
-                                    </option>
+                                <option value="Partial Payment">
+                                    Partial Payment
+                                </option>
 
-                                    <option value="Final Payment">
-                                        Final Payment
-                                    </option>
+                                <option value="Final Payment">
+                                    Final Payment
+                                </option>
 
-                                </select>
+                            </select>
 
                             </div>
 
@@ -414,8 +587,8 @@
                             <div class="col-md-3">
 
                                 <label class="form-label fw-semibold">
-                                    Payment Date
-                                </label>
+                                Payment Date
+                            </label>
 
                                 <input type="date" name="payment_date" class="form-control" value="{{ now_date }}" required>
 
@@ -425,8 +598,8 @@
                             <div class="col-md-3">
 
                                 <label class="form-label fw-semibold">
-                                    Note
-                                </label>
+                                Note
+                            </label>
 
                                 <input type="text" name="payment_note" class="form-control" placeholder="Optional note">
 
@@ -435,14 +608,14 @@
                         </div>
 
 
-                        <div class="mt-3">
+                        <div class="mt-4">
 
-                            <button type="submit" class="btn btn-success">
+                            <button type="submit" class="btn add-payment-btn">
 
-                                <i class="bi bi-plus-circle"></i>
-                                Add Payment
+                            <i class="bi bi-plus-circle"></i>
+                            Add Payment
 
-                            </button>
+                        </button>
 
                         </div>
 
@@ -452,16 +625,23 @@
 
             </div>
 
+
             {% else %}
 
-            <div class="alert alert-success mt-4">
+            <div class="fully-paid-alert mt-5">
 
                 <i class="bi bi-check-circle-fill"></i>
 
-                <strong>Invoice Fully Paid</strong>
-
                 <div>
+
+                    <strong>
+                    Invoice Fully Paid
+                </strong>
+
+                    <span>
                     No further payment is required.
+                </span>
+
                 </div>
 
             </div>
@@ -469,25 +649,36 @@
             {% endif %}
 
 
-            <!-- PAYMENT HISTORY -->
+            <!-- =================================================
+             PAYMENT HISTORY
+        ================================================= -->
+
             {% if invoice.get("payments", []) %}
 
-            <div class="mt-4">
+            <div class="mt-5">
 
                 <div class="d-flex justify-content-between align-items-center mb-3">
 
-                    <h5 class="fw-bold mb-0">
-                        <i class="bi bi-clock-history"></i> Payment History
-                    </h5>
+                    <div>
+
+                        <div class="invoice-content-label">
+                            PAYMENT HISTORY
+                        </div>
+
+                        <h5 class="fw-bold mb-0">
+                            Previous Transactions
+                        </h5>
+
+                    </div>
 
                 </div>
 
 
                 <div class="table-responsive">
 
-                    <table class="table table-hover table-bordered">
+                    <table class="table payment-history-table align-middle">
 
-                        <thead class="table-light">
+                        <thead>
 
                             <tr>
 
@@ -503,6 +694,7 @@
 
                         </thead>
 
+
                         <tbody>
 
                             {% for payment in invoice.get("payments", []) %}
@@ -513,27 +705,30 @@
                                     {{ loop.index }}
                                 </td>
 
+
                                 <td>
                                     {{ payment.get("date", "") }}
                                 </td>
+
 
                                 <td>
 
                                     {% if payment.get("type") == "Final Payment" %}
 
-                                    <span class="badge bg-success">
-                                            Final Payment
-                                        </span> {% elif payment.get("type") == "Advance" %}
+                                    <span class="payment-type final">
+                                    Final Payment
+                                </span> {% elif payment.get("type") == "Advance" %}
 
-                                    <span class="badge bg-primary">
-                                            Advance
-                                        </span> {% else %}
+                                    <span class="payment-type advance">
+                                    Advance
+                                </span> {% else %}
 
-                                    <span class="badge bg-warning text-dark">
-                                            {{ payment.get("type", "") }}
-                                        </span> {% endif %}
+                                    <span class="payment-type partial">
+                                    {{ payment.get("type", "") }}
+                                </span> {% endif %}
 
                                 </td>
+
 
                                 <td class="fw-bold text-success">
 
@@ -541,17 +736,20 @@
 
                                 </td>
 
+
                                 <td>
 
                                     ₹{{ "%.2f"|format(payment.get("remaining", 0)|float) }}
 
                                 </td>
 
+
                                 <td>
 
                                     {{ payment.get("note", "") or "-" }}
 
                                 </td>
+
 
                                 <td>
 
@@ -586,18 +784,21 @@
             {% endif %}
 
 
-            <!-- NOTES -->
+            <!-- =================================================
+             NOTES
+        ================================================= -->
+
             {% if invoice.get("notes") %}
 
-            <div class="mt-4">
+            <div class="invoice-notes mt-5">
 
-                <h6 class="fw-bold">
-                    Notes
-                </h6>
+                <div class="invoice-content-label mb-2">
+                    NOTES
+                </div>
 
-                <div class="alert alert-light border">
+                <div class="notes-box">
 
-                    {{ invoice["notes"] }}
+                    <i class="bi bi-info-circle"></i> {{ invoice["notes"] }}
 
                 </div>
 
@@ -606,18 +807,27 @@
             {% endif %}
 
 
-            <!-- FOOTER BRANDING -->
-            <div class="text-center mt-5 pt-4 border-top">
+            <!-- =================================================
+             FOOTER
+        ================================================= -->
 
-                <div class="fw-bold fs-5">
+            <div class="invoice-footer">
+
+                <div class="invoice-footer-logo">
+
+                    <img src="{{ url_for('static', filename='images/logo_logixius1.png') }}" alt="Logixius">
+
+                </div>
+
+                <div class="fw-bold">
                     LOGIXIUS
                 </div>
 
-                <div class="fw-bold text-muted small">
+                <div class="invoice-footer-tagline">
                     Transforming Ideas into Intelligent Solutions
                 </div>
 
-                <div class="text-muted small mt-2">
+                <div class="invoice-footer-thanks">
                     Thank you for your business!
                 </div>
 
@@ -626,7 +836,533 @@
         </div>
 
     </div>
+    ```
 
 </div>
+
+<!-- =========================================================
+     INVOICE VIEW CSS
+========================================================= -->
+
+<style>
+    .invoice-view-page {
+        background: #f5f7fb;
+    }
+    /* PAGE HEADER */
+    
+    .invoice-page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+    }
+    
+    .invoice-heading {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    
+    .invoice-heading-logo {
+        width: 58px;
+        height: 58px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        border: none;
+        overflow: hidden;
+    }
+    
+    .invoice-heading-logo img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+    
+    .invoice-section-label {
+        display: block;
+        color: #4f46e5;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 1px;
+        margin-bottom: 3px;
+    }
+    
+    .invoice-action-btn {
+        border-radius: 10px;
+        font-weight: 700;
+        padding: 10px 15px;
+    }
+    /* MAIN CARD */
+    
+    .invoice-main-card {
+        background: white;
+        border-radius: 22px;
+        overflow: hidden;
+        box-shadow: 0 15px 45px rgba(15, 23, 42, .09);
+        border: 1px solid #e2e8f0;
+    }
+    /* BRAND HEADER */
+    
+    .invoice-brand-header {
+        padding: 35px 40px;
+        background: radial-gradient( circle at 85% 20%, rgba(96, 165, 250, .35), transparent 30%), linear-gradient( 135deg, #111827, #172554 45%, #2563eb);
+        color: white;
+    }
+    
+    .invoice-brand {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    
+    .invoice-logo {
+        width: 70px;
+        height: 70px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, .08);
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, .15);
+        overflow: hidden;
+    }
+    
+    .invoice-logo img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        padding: 5px;
+    }
+    
+    .invoice-brand-name {
+        font-size: 30px;
+        font-weight: 900;
+        letter-spacing: 1px;
+    }
+    
+    .invoice-brand-tagline {
+        font-size: 11px;
+        font-weight: 600;
+        opacity: .75;
+    }
+    
+    .invoice-label-badge {
+        display: inline-block;
+        padding: 8px 15px;
+        border-radius: 8px;
+        background: white;
+        color: #1e3a8a;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 1px;
+    }
+    
+    .invoice-meta-label {
+        font-size: 11px;
+        opacity: .65;
+        text-transform: uppercase;
+        letter-spacing: .8px;
+    }
+    
+    .invoice-number-large {
+        font-size: 25px;
+        font-weight: 800;
+        margin: 3px 0 7px;
+    }
+    
+    .invoice-meta {
+        font-size: 12px;
+        opacity: .82;
+        line-height: 1.8;
+    }
+    /* BODY */
+    
+    .invoice-body {
+        padding: 40px;
+    }
+    
+    .invoice-content-label {
+        color: #4f46e5;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 1px;
+    }
+    
+    .customer-detail {
+        color: #64748b;
+        font-size: 13px;
+        margin-top: 5px;
+    }
+    
+    .customer-detail i {
+        width: 18px;
+        color: #4f46e5;
+    }
+    /* STATUS */
+    
+    .invoice-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 9px 15px;
+        border-radius: 50px;
+        font-size: 12px;
+        font-weight: 800;
+    }
+    
+    .status-paid {
+        background: #dcfce7;
+        color: #15803d;
+    }
+    
+    .status-partial {
+        background: #fef3c7;
+        color: #b45309;
+    }
+    
+    .status-pending {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+    /* ITEMS */
+    
+    .invoice-items-table {
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+    
+    .invoice-items-table thead th {
+        background: #172554;
+        color: white;
+        border: none;
+        padding: 14px 15px;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+    }
+    
+    .invoice-items-table tbody td {
+        padding: 15px;
+        border-color: #eef2f7;
+    }
+    
+    .invoice-items-table tbody tr:hover {
+        background: #f8faff;
+    }
+    /* TOTALS */
+    
+    .invoice-total-box {
+        padding: 22px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+    }
+    
+    .total-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+        color: #64748b;
+        font-size: 13px;
+    }
+    
+    .total-row strong {
+        color: #172554;
+    }
+    
+    .total-divider {
+        height: 1px;
+        background: #dbe2ea;
+        margin: 15px 0;
+    }
+    
+    .grand-total-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: #172554;
+        font-size: 17px;
+        font-weight: 800;
+    }
+    
+    .grand-total-row strong {
+        color: #2563eb;
+        font-size: 21px;
+    }
+    /* PAYMENT SUMMARY */
+    
+    .payment-summary-card {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 20px;
+        border-radius: 16px;
+        background: white;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 6px 18px rgba(15, 23, 42, .04);
+        height: 100%;
+        transition: .25s ease;
+    }
+    
+    .payment-summary-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(15, 23, 42, .08);
+    }
+    
+    .payment-summary-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 21px;
+    }
+    
+    .total-icon {
+        background: #dbeafe;
+        color: #2563eb;
+    }
+    
+    .paid-icon {
+        background: #dcfce7;
+        color: #16a34a;
+    }
+    
+    .remaining-icon {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+    
+    .payment-summary-card span {
+        color: #64748b;
+        font-size: 12px;
+    }
+    
+    .payment-summary-card h4 {
+        margin: 3px 0 0;
+        font-weight: 800;
+    }
+    /* ADD PAYMENT */
+    
+    .add-payment-card {
+        overflow: hidden;
+        border: 1px solid #dbeafe;
+        border-radius: 18px;
+        background: #ffffff;
+        box-shadow: 0 8px 25px rgba(15, 23, 42, .05);
+    }
+    
+    .add-payment-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 20px;
+        background: linear-gradient( 135deg, #172554, #2563eb);
+        color: white;
+        font-weight: 800;
+    }
+    
+    .add-payment-header span {
+        font-size: 11px;
+        opacity: .7;
+        font-weight: 500;
+    }
+    
+    .add-payment-btn {
+        background: linear-gradient( 135deg, #16a34a, #059669);
+        color: white;
+        border: none;
+        padding: 10px 18px;
+        border-radius: 10px;
+        font-weight: 700;
+    }
+    
+    .add-payment-btn:hover {
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 7px 18px rgba(22, 163, 74, .25);
+    }
+    /* FULLY PAID */
+    
+    .fully-paid-alert {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 18px 20px;
+        background: #ecfdf5;
+        border: 1px solid #bbf7d0;
+        color: #15803d;
+        border-radius: 15px;
+    }
+    
+    .fully-paid-alert>i {
+        font-size: 28px;
+    }
+    
+    .fully-paid-alert strong,
+    .fully-paid-alert span {
+        display: block;
+    }
+    
+    .fully-paid-alert span {
+        font-size: 13px;
+        margin-top: 2px;
+    }
+    /* PAYMENT HISTORY */
+    
+    .payment-history-table {
+        border: 1px solid #e2e8f0;
+    }
+    
+    .payment-history-table thead th {
+        background: #f8fafc;
+        color: #64748b;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+        padding: 13px;
+    }
+    
+    .payment-history-table tbody td {
+        padding: 13px;
+        border-color: #eef2f7;
+    }
+    
+    .payment-type {
+        display: inline-block;
+        padding: 5px 9px;
+        border-radius: 50px;
+        font-size: 10px;
+        font-weight: 700;
+    }
+    
+    .payment-type.final {
+        background: #dcfce7;
+        color: #15803d;
+    }
+    
+    .payment-type.advance {
+        background: #dbeafe;
+        color: #1d4ed8;
+    }
+    
+    .payment-type.partial {
+        background: #fef3c7;
+        color: #b45309;
+    }
+    /* NOTES */
+    
+    .notes-box {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 16px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        color: #64748b;
+        font-size: 13px;
+    }
+    
+    .notes-box i {
+        color: #4f46e5;
+        margin-top: 2px;
+    }
+    /* FOOTER */
+    
+    .invoice-footer {
+        margin-top: 50px;
+        padding-top: 25px;
+        border-top: 1px solid #e2e8f0;
+        text-align: center;
+        color: #64748b;
+    }
+    
+    .invoice-footer-logo {
+        width: 55px;
+        height: 55px;
+        margin: 0 auto 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        overflow: hidden;
+    }
+    
+    .invoice-footer-logo img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+    
+    .invoice-footer .fw-bold {
+        color: #172554;
+        letter-spacing: .8px;
+    }
+    
+    .invoice-footer-tagline {
+        font-size: 11px;
+        font-weight: 700;
+        margin-top: 3px;
+    }
+    
+    .invoice-footer-thanks {
+        margin-top: 8px;
+        font-size: 11px;
+    }
+    /* RESPONSIVE */
+    
+    @media (max-width: 768px) {
+        .invoice-page-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .invoice-body {
+            padding: 25px 20px;
+        }
+        .invoice-brand-header {
+            padding: 28px 22px;
+        }
+        .invoice-brand-name {
+            font-size: 24px;
+        }
+        .invoice-heading-logo {
+            width: 48px;
+            height: 48px;
+        }
+        .invoice-logo {
+            width: 58px;
+            height: 58px;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .invoice-heading {
+            align-items: flex-start;
+        }
+        .invoice-action-btn {
+            width: 100%;
+        }
+        .invoice-page-header>.d-flex {
+            width: 100%;
+        }
+        .invoice-brand {
+            align-items: flex-start;
+        }
+        .invoice-body {
+            padding: 20px 15px;
+        }
+        .invoice-brand-header {
+            padding: 25px 18px;
+        }
+        .invoice-items-table {
+            min-width: 700px;
+        }
+    }
+</style>
 
 {% endblock %}
